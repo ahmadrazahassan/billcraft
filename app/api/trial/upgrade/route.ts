@@ -203,8 +203,16 @@ export async function GET(request: NextRequest) {
   }
 }
 
+// Payment result type
+interface PaymentResult {
+  success: boolean
+  transactionId?: string
+  message?: string
+  error?: string
+}
+
 // Helper function to simulate payment processing
-async function processPayment(paymentData: any) {
+async function processPayment(paymentData: any): Promise<PaymentResult> {
   // In a real implementation, integrate with Stripe, PayPal, etc.
   return new Promise((resolve) => {
     setTimeout(() => {
