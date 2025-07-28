@@ -1,0 +1,254 @@
+'use client'
+
+import { motion } from 'framer-motion'
+import { Button } from '@/components/ui/button'
+import { Check, Star, Zap, Crown, Sparkles } from 'lucide-react'
+import Link from 'next/link'
+
+const pricingPlans = [
+  {
+    name: 'Starter',
+    price: '$0',
+    period: 'forever',
+    description: 'Perfect for freelancers just getting started with professional invoicing.',
+    icon: Zap,
+    iconColor: 'text-blue-500',
+    glassColor: 'from-blue-500/10 to-blue-600/5',
+    features: [
+      'Up to 5 invoices per month',
+      'Professional PDF export',
+      'Email support',
+      'Modern invoice designs',
+      'Basic tracking & analytics'
+    ],
+    buttonText: 'Get Started Free',
+    buttonVariant: 'outline' as const,
+    buttonClass: 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white',
+    popular: false
+  },
+  {
+    name: 'Professional',
+    price: '$15',
+    period: 'per month',
+    description: 'Everything you need to scale your business with advanced automation.',
+    icon: Star,
+    iconColor: 'text-orange-500',
+    glassColor: 'from-orange-500/15 to-orange-600/10',
+    features: [
+      'Unlimited invoices & customers',
+      'Advanced automation workflows',
+      'Custom branding & templates',
+      'Multi-currency support',
+      'Advanced analytics dashboard',
+      'Priority email support',
+      'Payment integrations',
+      'Automated reminders'
+    ],
+    buttonText: 'Start 3-Month Free Trial',
+    buttonVariant: 'default' as const,
+    buttonClass: 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white',
+    popular: true,
+    trialBadge: true
+  },
+  {
+    name: 'Enterprise',
+    price: '$49',
+    period: 'per month',
+    description: 'Advanced features and dedicated support for growing businesses.',
+    icon: Crown,
+    iconColor: 'text-purple-500',
+    glassColor: 'from-purple-500/10 to-purple-600/5',
+    features: [
+      'Everything in Professional',
+      'Unlimited team members',
+      'Advanced team permissions',
+      'API access & webhooks',
+      'SSO & security features',
+      'Custom integrations',
+      'Dedicated account manager',
+      'White-label solutions'
+    ],
+    buttonText: 'Contact Sales',
+    buttonVariant: 'outline' as const,
+    buttonClass: 'bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white',
+    popular: false
+  }
+]
+
+export function Pricing() {
+  const handlePlanClick = (plan: any) => {
+    if (plan.name === 'Professional') {
+      // Handle trial signup
+      window.location.href = '/auth/signup'
+    } else if (plan.name === 'Starter') {
+      // Handle free plan
+      window.location.href = '/auth/signup'
+    } else {
+      // Handle enterprise contact
+      window.location.href = '/contact'
+    }
+  }
+
+  return (
+    <section id="pricing" className="py-20 md:py-32 relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      {/* Enhanced Background elements */}
+      <div className="absolute top-1/4 left-0 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl" />
+      <div className="absolute bottom-1/4 right-0 w-80 h-80 bg-orange-400/10 rounded-full blur-3xl" />
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[32rem] h-[32rem] bg-purple-400/5 rounded-full blur-3xl" />
+      
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
+        <div className="max-w-7xl mx-auto">
+          {/* Section Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-20"
+          >
+
+            <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+              Choose Your
+              <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-purple-600">Perfect Plan</span>
+            </h2>
+
+          </motion.div>
+
+          {/* Pricing Cards */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {pricingPlans.map((plan, index) => (
+              <motion.div
+                key={plan.name}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                className={`relative group cursor-pointer ${
+                  plan.popular ? 'lg:scale-105 z-10' : ''
+                }`}
+                onClick={() => handlePlanClick(plan)}
+              >
+                {/* Glassmorphism Card */}
+                <div 
+                  className="relative h-full bg-white/20 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:-translate-y-2"
+                  style={{
+                    background: `linear-gradient(135deg, ${plan.glassColor})`,
+                    backdropFilter: 'blur(20px)',
+                    WebkitBackdropFilter: 'blur(20px)',
+                    boxShadow: plan.popular 
+                      ? '0 25px 50px -12px rgba(249, 115, 22, 0.4), 0 0 0 1px rgba(249, 115, 22, 0.1)'
+                      : '0 25px 50px -12px rgba(0, 0, 0, 0.1)'
+                  }}
+              >
+                {/* Popular Badge */}
+                {plan.popular && (
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                      <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-2 rounded-full text-sm font-bold flex items-center space-x-2 shadow-lg">
+                        <Star className="h-4 w-4" />
+                      <span>Most Popular</span>
+                    </div>
+                  </div>
+                )}
+
+                  {/* Trial Badge */}
+                  {plan.trialBadge && (
+                    <div className="absolute -top-2 -right-2">
+                      <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-1 rounded-full text-xs font-bold animate-pulse">
+                        3M FREE
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Plan Icon */}
+                  <div className="flex justify-center mb-6">
+                    <div className={`bg-white/30 backdrop-blur-sm rounded-2xl p-4 ${plan.iconColor}`}>
+                      <plan.icon className="h-8 w-8" />
+                    </div>
+                  </div>
+
+                {/* Plan Header */}
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                    {plan.name}
+                  </h3>
+                  <div className="mb-4">
+                      <span className="text-5xl font-bold text-gray-900">
+                      {plan.price}
+                    </span>
+                      <span className="text-gray-600 ml-2 text-lg">
+                        /{plan.period}
+                    </span>
+                  </div>
+                    <p className="text-gray-700 leading-relaxed">
+                    {plan.description}
+                  </p>
+                </div>
+
+                {/* Features */}
+                <div className="space-y-4 mb-8">
+                  {plan.features.map((feature, featureIndex) => (
+                    <div key={featureIndex} className="flex items-start space-x-3">
+                        <div className="flex-shrink-0 mt-1">
+                          <div className="w-5 h-5 bg-green-500/20 rounded-full flex items-center justify-center">
+                            <Check className="h-3 w-3 text-green-600 font-bold" />
+                          </div>
+                      </div>
+                        <span className="text-gray-700 text-sm leading-relaxed">
+                        {feature}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* CTA Button */}
+                <Button
+                    className={`w-full rounded-2xl py-4 text-base font-semibold transition-all duration-300 hover:scale-105 ${plan.buttonClass} shadow-lg hover:shadow-xl`}
+                  size="lg"
+                >
+                  {plan.buttonText}
+                </Button>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Bottom Note */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="text-center mt-16"
+          >
+            <div className="bg-white/40 backdrop-blur-xl border border-white/20 rounded-2xl p-8 max-w-2xl mx-auto shadow-xl">
+              <div className="flex items-center justify-center space-x-6 text-sm text-gray-700">
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="font-medium">3 Months Free Trial</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <span className="font-medium">No Credit Card Required</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                  <span className="font-medium">Cancel Anytime</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Additional Features Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="text-center mt-12"
+          >
+            <p className="text-gray-600 text-lg">
+              ✨ All plans include: SSL security, 99.9% uptime, email support, and regular updates
+            </p>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  )
+} 
