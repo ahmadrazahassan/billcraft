@@ -147,7 +147,7 @@ export default function CreateInvoicePage(): JSX.Element {
   const [aiInput, setAiInput] = useState<string>('')
   const [isAiLoading, setIsAiLoading] = useState<boolean>(false)
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
-  const [aiSuggestions, setAiSuggestions] = useState<string[]>([])
+
   const aiMessagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   
@@ -204,40 +204,7 @@ export default function CreateInvoicePage(): JSX.Element {
     calculateTotals()
   }, [invoiceData.items, taxRate, discountAmount])
 
-  // Generate AI suggestions based on current form state
-  useEffect(() => {
-    const generateSuggestions = () => {
-      const suggestions: string[] = []
-      
-      if (!invoiceData.company.name) {
-        suggestions.push("Add your company information to make the invoice professional")
-      }
-      
-      if (!invoiceData.client.name) {
-        suggestions.push("Add client details to specify who this invoice is for")
-      }
-      
-      if (invoiceData.items.length === 1 && !invoiceData.items[0].description) {
-        suggestions.push("Add service descriptions and pricing to complete your invoice")
-      }
-      
-      if (invoiceData.total === 0) {
-        suggestions.push("Add pricing to your services to calculate totals")
-      }
-      
-      if (!invoiceData.terms) {
-        suggestions.push("Add payment terms to ensure clear expectations")
-      }
-      
-      if (invoiceData.client.email && !invoiceData.company.email) {
-        suggestions.push("Add your company email for professional communication")
-      }
 
-      setAiSuggestions(suggestions)
-    }
-
-    generateSuggestions()
-  }, [invoiceData])
 
   // Utility functions
   const updateCompanyData = (field: string, value: string): void => {
@@ -1228,27 +1195,7 @@ export default function CreateInvoicePage(): JSX.Element {
                 </div>
               </div>
 
-              {/* Smart Suggestions */}
-              {aiSuggestions.length > 0 && (
-                <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border-b border-slate-200">
-                  <h4 className="text-sm font-semibold text-slate-700 mb-2 flex items-center">
-                    <Sparkles className="w-4 h-4 mr-1 text-purple-600" />
-                    Smart Suggestions
-                  </h4>
-                  <div className="space-y-2">
-                    {aiSuggestions.slice(0, 2).map((suggestion, index) => (
-                      <button
-                        key={index}
-                        onClick={() => sendAIMessage(suggestion)}
-                        disabled={isAiLoading}
-                        className="w-full text-left p-2 bg-white rounded-lg border border-slate-200 hover:border-purple-300 hover:bg-purple-50 transition-all text-xs text-slate-700 disabled:opacity-50"
-                      >
-                        💡 {suggestion}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
+
 
               {/* Chat Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
@@ -1262,14 +1209,8 @@ export default function CreateInvoicePage(): JSX.Element {
                         Hello! I'm BillCraft AI, your expert invoicing assistant! ✨
                       </p>
                       <p className="text-xs text-slate-600 mb-3">
-                        I can auto-fill your invoice with professional data, extract information from your messages, and provide expert business advice. Try asking me to:
+                        I can help you with invoice creation, data extraction, and professional formatting. Just ask me anything about invoicing!
                       </p>
-                      <ul className="text-xs text-slate-600 space-y-1 mb-3">
-                        <li>• "Fill my company information"</li>
-                        <li>• "Add a client: TechCorp, email: contact@techcorp.com"</li>
-                        <li>• "Generate services for web development project"</li>
-                        <li>• "What are the best payment terms?"</li>
-                      </ul>
                     </div>
                   </div>
                 ) : (
@@ -1328,44 +1269,7 @@ export default function CreateInvoicePage(): JSX.Element {
                 <div ref={aiMessagesEndRef} />
               </div>
 
-              {/* Smart Actions */}
-              <div className="p-4 border-t border-slate-200 bg-slate-50">
-                <h4 className="text-sm font-semibold text-slate-700 mb-3">Quick Actions</h4>
-                <div className="grid grid-cols-2 gap-2 mb-4">
-                  <button
-                    onClick={() => sendAIMessage("Generate professional company information for my business")}
-                    disabled={isAiLoading}
-                    className="p-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-xs font-medium transition-colors disabled:opacity-50"
-                  >
-                    <Building2 className="w-3 h-3 mr-1 inline" />
-                    Fill Company
-                  </button>
-                  <button
-                    onClick={() => sendAIMessage("Generate professional client information for this invoice")}
-                    disabled={isAiLoading}
-                    className="p-2 bg-green-100 hover:bg-green-200 text-green-700 rounded-lg text-xs font-medium transition-colors disabled:opacity-50"
-                  >
-                    <Users className="w-3 h-3 mr-1 inline" />
-                    Add Client
-                  </button>
-                  <button
-                    onClick={() => sendAIMessage("Generate professional service items with competitive pricing")}
-                    disabled={isAiLoading}
-                    className="p-2 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded-lg text-xs font-medium transition-colors disabled:opacity-50"
-                  >
-                    <Package className="w-3 h-3 mr-1 inline" />
-                    Add Services
-                  </button>
-                  <button
-                    onClick={() => sendAIMessage("Add professional payment terms and notes to this invoice")}
-                    disabled={isAiLoading}
-                    className="p-2 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-lg text-xs font-medium transition-colors disabled:opacity-50"
-                  >
-                    <FileText className="w-3 h-3 mr-1 inline" />
-                    Add Terms
-                  </button>
-                </div>
-              </div>
+
 
               {/* Input Area */}
               <div className="p-4 border-t border-slate-200 bg-white">
