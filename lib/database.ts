@@ -160,6 +160,17 @@ export const userService = {
           
           user = await this.createUser(userData)
           console.log('✅ User successfully created in Supabase:', user.id)
+          
+          // Create trial record for new user
+          try {
+            console.log('🚀 Creating trial record for new user:', user.id)
+            await trialService.startTrial(user.id, 'professional')
+            console.log('✅ Trial record created successfully for user:', user.id)
+          } catch (trialError: any) {
+            console.error('❌ Failed to create trial record:', trialError)
+            // Don't throw error here - user creation was successful, trial creation is supplementary
+            // The user can still use the system and trial can be created later if needed
+          }
         } else {
           console.log('✅ User already exists in Supabase:', user.id)
           
@@ -207,12 +218,16 @@ export const clientService = {
   // Get all clients for a user
   async getClients(userId: string): Promise<Tables<'clients'>[]> {
     try {
-      const { data, error } = await supabase
+      console.log('🔍 CLIENT SERVICE: Getting clients for userId:', userId)
+      const supabaseAdmin = getSupabaseAdmin()
+      
+      const { data, error } = await supabaseAdmin
         .from('clients')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
       
+      console.log('🔍 CLIENT SERVICE: Query result:', { data, error })
       if (error) throw error
       return data || []
     } catch (error) {
@@ -224,7 +239,8 @@ export const clientService = {
   // Get single client
   async getClient(id: string): Promise<Tables<'clients'> | null> {
     try {
-      const { data, error } = await supabase
+      const supabaseAdmin = getSupabaseAdmin()
+      const { data, error } = await supabaseAdmin
         .from('clients')
         .select('*')
         .eq('id', id)
@@ -252,6 +268,15 @@ export const clientService = {
         .single()
       
       if (error) throw error
+      
+      // Track client creation in trial usage stats
+      try {
+        await trialService.incrementUsage(client.user_id, 'customersAdded')
+      } catch (usageError) {
+        console.warn('Failed to update trial usage for client creation:', usageError)
+        // Don't throw - client creation was successful
+      }
+      
       return data
     } catch (error) {
       console.error('Error creating client:', error)
@@ -300,7 +325,10 @@ export const invoiceService = {
   // Get all invoices for a user with client info and items
   async getInvoices(userId: string): Promise<any[]> {
     try {
-      const { data, error } = await supabase
+      console.log('🔍 INVOICE SERVICE: Getting invoices for userId:', userId)
+      const supabaseAdmin = getSupabaseAdmin()
+      
+      const { data, error } = await supabaseAdmin
         .from('invoices')
         .select(`
           *,
@@ -310,6 +338,7 @@ export const invoiceService = {
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
       
+      console.log('🔍 INVOICE SERVICE: Query result:', { data: data?.length, error })
       if (error) throw error
       return data || []
     } catch (error) {
@@ -321,7 +350,8 @@ export const invoiceService = {
   // Get single invoice with all related data
   async getInvoice(id: string): Promise<any | null> {
     try {
-      const { data, error } = await supabase
+      const supabaseAdmin = getSupabaseAdmin()
+      const { data, error } = await supabaseAdmin
         .from('invoices')
         .select(`
           *,
@@ -411,6 +441,14 @@ export const invoiceService = {
         console.log('✅ Invoice items created successfully')
       }
 
+      // Track invoice creation in trial usage stats
+      try {
+        await trialService.incrementUsage(invoiceData.userId, 'invoicesCreated')
+      } catch (usageError) {
+        console.warn('Failed to update trial usage for invoice creation:', usageError)
+        // Don't throw - invoice creation was successful
+      }
+
       return invoice
     } catch (error) {
       console.error('Error creating invoice:', error)
@@ -457,6 +495,17 @@ export const invoiceService = {
         .single()
       
       if (error) throw error
+      
+      // Track payment in trial usage stats when invoice is marked as paid
+      if (status === 'paid' && data.user_id) {
+        try {
+          await trialService.incrementUsage(data.user_id, 'paymentsProcessed')
+        } catch (usageError) {
+          console.warn('Failed to update trial usage for payment:', usageError)
+          // Don't throw - status update was successful
+        }
+      }
+      
       return data
     } catch (error) {
       console.error('Error updating invoice status:', error)
@@ -483,7 +532,8 @@ export const invoiceService = {
   // Generate next invoice number for user
   async generateInvoiceNumber(userId: string): Promise<string> {
     try {
-      const { data, error } = await supabase
+      const supabaseAdmin = getSupabaseAdmin()
+      const { data, error } = await supabaseAdmin
         .from('invoices')
         .select('invoice_number')
         .eq('user_id', userId)
@@ -526,7 +576,8 @@ export const trialService = {
   // Get active trial for user
   async getActiveTrial(userId: string): Promise<Tables<'trials'> | null> {
     try {
-      const { data, error } = await supabase
+      const supabaseAdmin = getSupabaseAdmin()
+      const { data, error } = await supabaseAdmin
         .from('trials')
         .select('*')
         .eq('user_id', userId)
@@ -537,19 +588,119 @@ export const trialService = {
         if (error.code === 'PGRST116') return null
         throw error
       }
+      
+      // Auto-check if trial should be expired
+      if (data) {
+        const now = new Date()
+        const endDate = new Date(data.end_date)
+        
+        if (now > endDate) {
+          // Trial has expired, update status automatically
+          console.log('🔄 Auto-expiring trial:', data.id)
+          await this.updateTrialStatus(data.user_id, 'expired')
+          return { ...data, status: 'expired' as any }
+        }
+      }
+      
       return data
     } catch (error) {
-      console.error('Error fetching trial:', error)
+      console.error('Error fetching active trial:', error)
       throw error
+    }
+  },
+
+  // Get trial by user ID (any status)
+  async getTrialByUserId(userId: string): Promise<Tables<'trials'> | null> {
+    try {
+      const supabaseAdmin = getSupabaseAdmin()
+      const { data, error } = await supabaseAdmin
+        .from('trials')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
+      
+      if (error) {
+        if (error.code === 'PGRST116') return null
+        throw error
+      }
+      
+      return data
+    } catch (error) {
+      console.error('Error fetching trial by user ID:', error)
+      throw error
+    }
+  },
+
+  // Calculate precise trial metrics with timezone support
+  calculateTrialMetrics(trial: Tables<'trials'>) {
+    const now = new Date()
+    const startDate = new Date(trial.start_date)
+    const endDate = new Date(trial.end_date)
+    
+    // Total trial duration in milliseconds
+    const totalDuration = endDate.getTime() - startDate.getTime()
+    
+    // Time elapsed since start
+    const elapsed = Math.max(0, now.getTime() - startDate.getTime())
+    
+    // Time remaining (can be negative if expired)
+    const remaining = endDate.getTime() - now.getTime()
+    
+    // Calculate days with precise decimal precision
+    const totalDays = Math.ceil(totalDuration / (1000 * 60 * 60 * 24))
+    const daysElapsed = Math.floor(elapsed / (1000 * 60 * 60 * 24))
+    const daysRemaining = Math.max(0, Math.ceil(remaining / (1000 * 60 * 60 * 24)))
+    
+    // Calculate hours remaining for today
+    const hoursRemaining = Math.max(0, Math.ceil(remaining / (1000 * 60 * 60)))
+    
+    // Progress percentage (0-100)
+    const progressPercentage = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100))
+    
+    // Determine status flags
+    const isExpired = remaining <= 0
+    const isExpiringSoon = daysRemaining <= 7 && daysRemaining > 0
+    const isExpiringSoonCritical = daysRemaining <= 2 && daysRemaining > 0
+    const isInGracePeriod = isExpired && Math.abs(remaining) <= (3 * 24 * 60 * 60 * 1000) // 3 days grace
+    
+    return {
+      totalDays,
+      daysElapsed,
+      daysRemaining,
+      hoursRemaining,
+      progressPercentage: Math.round(progressPercentage * 100) / 100, // 2 decimal precision
+      isExpired,
+      isExpiringSoon,
+      isExpiringSoonCritical,
+      isInGracePeriod,
+      startDate: startDate.toISOString(),
+      endDate: endDate.toISOString(),
+      remaining: remaining,
+      elapsed: elapsed
     }
   },
 
   // Start new trial
   async startTrial(userId: string, plan: 'professional' | 'enterprise' = 'professional'): Promise<Tables<'trials'>> {
     try {
+      // Check if user already has an active trial
+      const existingTrial = await this.getActiveTrial(userId)
+      if (existingTrial && existingTrial.status === 'active') {
+        const metrics = this.calculateTrialMetrics(existingTrial)
+        if (!metrics.isExpired) {
+          console.log('User already has active trial:', existingTrial.id)
+          return existingTrial
+        }
+      }
+
       const startDate = new Date()
       const endDate = new Date()
-      endDate.setMonth(endDate.getMonth() + 3) // 3 months
+      endDate.setMonth(endDate.getMonth() + 3) // Exactly 3 months from start
+      
+      // Set to end of day for the end date (23:59:59)
+      endDate.setHours(23, 59, 59, 999)
 
       const features = {
         unlimitedInvoices: true,
@@ -577,13 +728,17 @@ export const trialService = {
           usage_stats: {
             invoicesCreated: 0,
             customersAdded: 0,
-            paymentsProcessed: 0
+            paymentsProcessed: 0,
+            reportsGenerated: 0,
+            lastUsageUpdate: startDate.toISOString()
           }
         })
         .select()
         .single()
       
       if (error) throw error
+      
+      console.log('✅ Trial started successfully:', data.id, 'for user:', userId)
       return data
     } catch (error) {
       console.error('Error starting trial:', error)
@@ -591,15 +746,70 @@ export const trialService = {
     }
   },
 
-  // Update trial status
+  // Update trial status with automatic cleanup
   async updateTrialStatus(userId: string, status: 'active' | 'expired' | 'cancelled' | 'converted'): Promise<Tables<'trials'> | null> {
     try {
+      const supabaseAdmin = getSupabaseAdmin()
+      
+      const updateData: any = { 
+        status, 
+        updated_at: new Date().toISOString() 
+      }
+      
+      // Add specific timestamps based on status
+      if (status === 'expired') {
+        updateData.expired_at = new Date().toISOString()
+      } else if (status === 'converted') {
+        updateData.converted_at = new Date().toISOString()
+      } else if (status === 'cancelled') {
+        updateData.cancelled_at = new Date().toISOString()
+      }
+
+      const { data, error } = await supabaseAdmin
+        .from('trials')
+        .update(updateData)
+        .eq('user_id', userId)
+        .eq('status', 'active') // Only update if currently active
+        .select()
+        .single()
+      
+      if (error) {
+        if (error.code === 'PGRST116') return null
+        throw error
+      }
+      
+      console.log('✅ Trial status updated:', data.id, 'to', status)
+      return data
+    } catch (error) {
+      console.error('Error updating trial status:', error)
+      throw error
+    }
+  },
+
+  // Update trial usage statistics
+  async updateUsageStats(userId: string, stats: {
+    invoicesCreated?: number
+    customersAdded?: number  
+    paymentsProcessed?: number
+    reportsGenerated?: number
+  }): Promise<Tables<'trials'> | null> {
+    try {
+      const trial = await this.getActiveTrial(userId)
+      if (!trial) return null
+
+      const currentStats = trial.usage_stats || {}
+      const updatedStats = {
+        ...currentStats,
+        ...stats,
+        lastUsageUpdate: new Date().toISOString()
+      }
+
       const supabaseAdmin = getSupabaseAdmin()
       const { data, error } = await supabaseAdmin
         .from('trials')
         .update({ 
-          status, 
-          updated_at: new Date().toISOString() 
+          usage_stats: updatedStats,
+          updated_at: new Date().toISOString()
         })
         .eq('user_id', userId)
         .eq('status', 'active')
@@ -610,9 +820,162 @@ export const trialService = {
         if (error.code === 'PGRST116') return null
         throw error
       }
+      
       return data
     } catch (error) {
-      console.error('Error updating trial status:', error)
+      console.error('Error updating usage stats:', error)
+      throw error
+    }
+  },
+
+  // Increment usage counter
+  async incrementUsage(userId: string, type: 'invoicesCreated' | 'customersAdded' | 'paymentsProcessed' | 'reportsGenerated'): Promise<boolean> {
+    try {
+      const trial = await this.getActiveTrial(userId)
+      if (!trial) return false
+
+      const currentStats = trial.usage_stats || {}
+      const currentCount = currentStats[type] || 0
+      
+      await this.updateUsageStats(userId, {
+        [type]: currentCount + 1
+      })
+      
+      return true
+    } catch (error) {
+      console.error('Error incrementing usage:', error)
+      return false
+    }
+  },
+
+  // Check and update all expired trials (for scheduled cleanup)
+  async cleanupExpiredTrials(): Promise<number> {
+    try {
+      const supabaseAdmin = getSupabaseAdmin()
+      const now = new Date().toISOString()
+      
+      const { data, error } = await supabaseAdmin
+        .from('trials')
+        .update({ 
+          status: 'expired',
+          expired_at: now,
+          updated_at: now
+        })
+        .eq('status', 'active')
+        .lt('end_date', now)
+        .select('id')
+      
+      if (error) throw error
+      
+      const expiredCount = data?.length || 0
+      if (expiredCount > 0) {
+        console.log(`🧹 Auto-expired ${expiredCount} trials`)
+      }
+      
+      return expiredCount
+    } catch (error) {
+      console.error('Error during trial cleanup:', error)
+      throw error
+    }
+  },
+
+  // Extend trial (for customer support scenarios)
+  async extendTrial(userId: string, additionalDays: number, reason?: string): Promise<Tables<'trials'> | null> {
+    try {
+      const trial = await this.getTrialByUserId(userId)
+      if (!trial) return null
+
+      const currentEndDate = new Date(trial.end_date)
+      const newEndDate = new Date(currentEndDate.getTime() + (additionalDays * 24 * 60 * 60 * 1000))
+      newEndDate.setHours(23, 59, 59, 999) // End of day
+
+      const supabaseAdmin = getSupabaseAdmin()
+      const { data, error } = await supabaseAdmin
+        .from('trials')
+        .update({ 
+          end_date: newEndDate.toISOString(),
+          status: 'active', // Reactivate if was expired
+          updated_at: new Date().toISOString(),
+          extension_reason: reason || `Extended by ${additionalDays} days`
+        })
+        .eq('user_id', userId)
+        .eq('id', trial.id)
+        .select()
+        .single()
+      
+      if (error) throw error
+      
+      console.log(`✅ Trial extended by ${additionalDays} days for user:`, userId)
+      return data
+    } catch (error) {
+      console.error('Error extending trial:', error)
+      throw error
+    }
+  },
+
+  // Get detailed trial status with all metrics
+  async getDetailedTrialStatus(userId: string): Promise<{
+    trial: Tables<'trials'> | null
+    metrics: any
+    recommendations: any
+  }> {
+    try {
+      const trial = await this.getTrialByUserId(userId)
+      
+      if (!trial) {
+        return {
+          trial: null,
+          metrics: null,
+          recommendations: {
+            action: 'start_trial',
+            message: 'Start your free trial to access all features',
+            urgency: 'low'
+          }
+        }
+      }
+
+      const metrics = this.calculateTrialMetrics(trial)
+      
+      // Generate recommendations based on trial state
+      let recommendations: any = null
+      
+      if (metrics.isInGracePeriod) {
+        recommendations = {
+          action: 'upgrade_urgent',
+          message: 'Your trial has expired but you still have access. Upgrade now to keep your data!',
+          urgency: 'critical',
+          suggestedPlan: trial.plan
+        }
+      } else if (metrics.isExpiringSoonCritical) {
+        recommendations = {
+          action: 'upgrade_now',
+          message: `Only ${metrics.daysRemaining} days left! Upgrade now to avoid losing access.`,
+          urgency: 'high',
+          suggestedPlan: trial.plan
+        }
+      } else if (metrics.isExpiringSoon) {
+        recommendations = {
+          action: 'consider_upgrade',
+          message: `${metrics.daysRemaining} days remaining in your trial. Consider upgrading soon.`,
+          urgency: 'medium',
+          suggestedPlan: trial.plan
+        }
+      } else if (metrics.isExpired && !metrics.isInGracePeriod) {
+        recommendations = {
+          action: 'upgrade_required',
+          message: 'Your trial has expired. Upgrade to continue using BillCraft.',
+          urgency: 'critical',
+          suggestedPlan: 'professional'
+        }
+      }
+
+      return {
+        trial,
+        metrics,
+        recommendations
+      }
+    } catch (error) {
+      console.error('Error getting detailed trial status:', error)
       throw error
     }
   }
@@ -623,12 +986,13 @@ export const statsService = {
   // Get dashboard stats for user
   async getDashboardStats(userId: string) {
     try {
+      const supabaseAdmin = getSupabaseAdmin()
       const [invoicesResult, clientsResult] = await Promise.all([
-        supabase
+        supabaseAdmin
           .from('invoices')
           .select('id, status, total')
           .eq('user_id', userId),
-        supabase
+        supabaseAdmin
           .from('clients')
           .select('id')
           .eq('user_id', userId)
@@ -660,4 +1024,6 @@ export const statsService = {
       throw error
     }
   }
-} 
+}
+
+ 

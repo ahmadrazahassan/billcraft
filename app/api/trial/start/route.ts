@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyIdToken, isFirebaseAdminAvailable } from '@/lib/firebase-admin'
+import { userService, trialService } from '@/lib/database'
 
 export async function POST(request: NextRequest) {
   try {
@@ -44,44 +45,66 @@ export async function POST(request: NextRequest) {
     }
 
     const { plan = 'professional' } = await request.json()
-    const userId = decodedToken.uid
+    const firebaseUid = decodedToken.uid
     
-    // Start trial (3 months from now)
-    const startDate = new Date()
-    const endDate = new Date()
-    endDate.setMonth(endDate.getMonth() + 3)
-
-    const trialData = {
-      userId: userId,
-      plan: plan,
-      status: 'active',
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString(),
-      features: {
-        unlimitedInvoices: true,
-        advancedAutomation: true,
-        customBranding: true,
-        multiCurrency: true,
-        analytics: true,
-        prioritySupport: true,
-        teamCollaboration: plan === 'enterprise',
-        apiAccess: plan === 'enterprise',
-        ssoIntegration: plan === 'enterprise',
-        whiteLabel: plan === 'enterprise'
-      },
-      usage: {
-        invoicesCreated: 0,
-        customersAdded: 0,
-        paymentsProcessed: 0
-      },
-      createdAt: startDate.toISOString(),
-      updatedAt: startDate.toISOString()
+    // Get the user from Supabase to get the internal user ID
+    const user = await userService.getCurrentUser(firebaseUid)
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found in database. Please sync your account first.' },
+        { status: 404 }
+      )
     }
+
+    // Check if user already has an active trial
+    const existingTrial = await trialService.getActiveTrial(user.id)
+    if (existingTrial && existingTrial.status === 'active') {
+      const metrics = trialService.calculateTrialMetrics(existingTrial)
+      if (!metrics.isExpired) {
+        return NextResponse.json({
+          success: false,
+          error: 'User already has an active trial',
+          trial: {
+            id: existingTrial.id,
+            plan: existingTrial.plan,
+            status: existingTrial.status,
+            startDate: existingTrial.start_date,
+            endDate: existingTrial.end_date,
+            daysRemaining: metrics.daysRemaining
+          }
+        }, { status: 409 })
+      }
+    }
+
+    // Validate plan
+    if (!['professional', 'enterprise'].includes(plan)) {
+      return NextResponse.json(
+        { error: 'Invalid plan. Must be "professional" or "enterprise"' },
+        { status: 400 }
+      )
+    }
+
+    // Start the trial using the enhanced service
+    const trial = await trialService.startTrial(user.id, plan as 'professional' | 'enterprise')
+    const metrics = trialService.calculateTrialMetrics(trial)
 
     return NextResponse.json({
       success: true,
-      message: 'Trial started successfully',
-      trial: trialData
+      message: `${plan} trial started successfully`,
+      trial: {
+        id: trial.id,
+        userId: trial.user_id,
+        plan: trial.plan,
+        status: trial.status,
+        startDate: trial.start_date,
+        endDate: trial.end_date,
+        features: trial.features,
+        usage: trial.usage_stats,
+        daysRemaining: metrics.daysRemaining,
+        totalDays: metrics.totalDays,
+        createdAt: trial.created_at,
+        updatedAt: trial.updated_at
+      }
     })
 
   } catch (error: any) {
@@ -100,27 +123,71 @@ export async function POST(request: NextRequest) {
 // GET endpoint to check if user can start a trial
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('userId')
+    // Check if Firebase Admin is configured
+    if (!isFirebaseAdminAvailable()) {
+      return NextResponse.json({
+        error: 'Firebase Admin not configured'
+      }, { status: 503 })
+    }
 
-    if (!userId) {
+    // Get authorization header for user identification
+    const authHeader = request.headers.get('Authorization')
+    if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json(
-        { error: 'User ID required' },
-        { status: 400 }
+        { error: 'Authorization token required' },
+        { status: 401 }
       )
     }
 
+    const token = authHeader.split(' ')[1]
+    const decodedToken = await verifyIdToken(token)
+    const firebaseUid = decodedToken.uid
+
+    // Get the user from Supabase
+    const user = await userService.getCurrentUser(firebaseUid)
+    if (!user) {
+      return NextResponse.json({
+        eligible: false,
+        reason: 'User not found in database'
+      })
+    }
+
     // Check if user has already used a trial
-    // In a real implementation, you would check your database
-    const hasUsedTrial = false // This would be a database query
+    const existingTrial = await trialService.getTrialByUserId(user.id)
+    const hasUsedTrial = existingTrial !== null
+
+    let eligibilityStatus = 'eligible'
+    let message = 'User is eligible for a 3-month free trial'
+
+    if (hasUsedTrial) {
+      const activeTriaL = await trialService.getActiveTrial(user.id)
+      if (activeTriaL && activeTriaL.status === 'active') {
+        const metrics = trialService.calculateTrialMetrics(activeTriaL)
+        if (!metrics.isExpired) {
+          eligibilityStatus = 'active_trial'
+          message = `User already has an active ${activeTriaL.plan} trial with ${metrics.daysRemaining} days remaining`
+        } else {
+          eligibilityStatus = 'trial_used'
+          message = 'User has already used their free trial'
+        }
+      } else {
+        eligibilityStatus = 'trial_used'
+        message = 'User has already used their free trial'
+      }
+    }
 
     return NextResponse.json({
-      eligible: !hasUsedTrial,
+      eligible: eligibilityStatus === 'eligible',
+      status: eligibilityStatus,
       availablePlans: ['professional', 'enterprise'],
-      trialDuration: '3 months',
-      message: hasUsedTrial 
-        ? 'User has already used their free trial'
-        : 'User is eligible for a 3-month free trial'
+      trialDuration: '90 days',
+      message: message,
+      existingTrial: existingTrial ? {
+        plan: existingTrial.plan,
+        status: existingTrial.status,
+        startDate: existingTrial.start_date,
+        endDate: existingTrial.end_date
+      } : null
     })
 
   } catch (error: any) {

@@ -56,6 +56,7 @@ import { Select } from '@/components/ui/select'
 import { useAuth } from '@/contexts/auth-context'
 import { useToast } from '@/hooks/use-toast'
 import { userService, invoiceService } from '@/lib/database'
+import { AIService } from '@/lib/ai-service'
 
 const statusConfig = {
   draft: {
@@ -174,6 +175,7 @@ export default function InvoicesPage() {
   // Calculate stats from real invoice data
   const stats = useMemo(() => {
     const totalInvoices = invoices.length
+    const draftInvoices = invoices.filter(inv => inv.status === 'draft')
     const paidInvoices = invoices.filter(inv => inv.status === 'paid')
     const pendingInvoices = invoices.filter(inv => inv.status === 'sent')
     const overdueInvoices = invoices.filter(inv => inv.status === 'overdue')
@@ -181,6 +183,7 @@ export default function InvoicesPage() {
     const totalRevenue = paidInvoices.reduce((sum, inv) => sum + inv.total, 0)
     const pendingAmount = pendingInvoices.reduce((sum, inv) => sum + inv.total, 0)
     const overdueAmount = overdueInvoices.reduce((sum, inv) => sum + inv.total, 0)
+    const draftAmount = draftInvoices.reduce((sum, inv) => sum + inv.total, 0)
     
     const successRate = totalInvoices > 0 ? (paidInvoices.length / totalInvoices) * 100 : 0
     
@@ -197,7 +200,9 @@ export default function InvoicesPage() {
       totalRevenue: thisMonthRevenue, // Show this month's revenue
       pendingAmount,
       overdueAmount,
+      draftAmount,
       successRate,
+      draftCount: draftInvoices.length,
       paidCount: paidInvoices.length,
       pendingCount: pendingInvoices.length,
       overdueCount: overdueInvoices.length,
@@ -241,15 +246,15 @@ export default function InvoicesPage() {
       description: `${stats.paidCount}/${stats.totalInvoices} paid`
     },
     {
-      title: 'Overdue Amount',
-      value: `$${stats.overdueAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      subtitle: `${stats.overdueCount} invoices`,
-      icon: AlertCircle,
-      gradient: 'from-red-500 via-rose-500 to-pink-600',
-      bgGradient: 'from-red-50/50 via-rose-50/30 to-pink-50/50',
-      change: stats.overdueCount > 0 ? 'Urgent' : 'None',
-      changeType: stats.overdueCount > 0 ? 'negative' : 'positive',
-      description: 'Requires follow-up'
+      title: 'Draft Invoices',
+      value: `${stats.draftCount}`,
+      subtitle: `$${stats.draftAmount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} total value`,
+      icon: Edit,
+      gradient: 'from-blue-500 via-indigo-500 to-purple-500',
+      bgGradient: 'from-blue-50/50 via-indigo-50/30 to-purple-50/50',
+      change: stats.draftCount > 0 ? 'Ready to send' : 'All sent',
+      changeType: stats.draftCount > 0 ? 'neutral' : 'positive',
+      description: 'Work in progress'
     }
   ]
 
@@ -661,7 +666,29 @@ export default function InvoicesPage() {
                 >
                   <Badge 
                     variant="secondary" 
-                    className="rounded-full hover:bg-emerald-100 hover:text-emerald-700 transition-colors cursor-pointer px-3 py-1"
+                    className={`rounded-full transition-colors cursor-pointer px-3 py-1 ${
+                      statusFilter === 'draft' 
+                        ? 'bg-blue-100 text-blue-700 ring-2 ring-blue-200' 
+                        : 'hover:bg-blue-100 hover:text-blue-700'
+                    }`}
+                    onClick={() => setStatusFilter('draft')}
+                  >
+                    <Edit className="h-3 w-3 mr-1" />
+                    Drafts
+                  </Badge>
+                </motion.div>
+                
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Badge 
+                    variant="secondary" 
+                    className={`rounded-full transition-colors cursor-pointer px-3 py-1 ${
+                      statusFilter === 'sent' 
+                        ? 'bg-emerald-100 text-emerald-700 ring-2 ring-emerald-200' 
+                        : 'hover:bg-emerald-100 hover:text-emerald-700'
+                    }`}
                     onClick={() => setStatusFilter('sent')}
                   >
                     <Send className="h-3 w-3 mr-1" />
@@ -675,7 +702,11 @@ export default function InvoicesPage() {
                 >
                   <Badge 
                     variant="secondary" 
-                    className="rounded-full hover:bg-red-100 hover:text-red-700 transition-colors cursor-pointer px-3 py-1"
+                    className={`rounded-full transition-colors cursor-pointer px-3 py-1 ${
+                      statusFilter === 'overdue' 
+                        ? 'bg-red-100 text-red-700 ring-2 ring-red-200' 
+                        : 'hover:bg-red-100 hover:text-red-700'
+                    }`}
                     onClick={() => setStatusFilter('overdue')}
                   >
                     <AlertCircle className="h-3 w-3 mr-1" />
@@ -689,7 +720,11 @@ export default function InvoicesPage() {
                 >
                   <Badge 
                     variant="secondary" 
-                    className="rounded-full hover:bg-emerald-100 hover:text-emerald-700 transition-colors cursor-pointer px-3 py-1"
+                    className={`rounded-full transition-colors cursor-pointer px-3 py-1 ${
+                      statusFilter === 'paid' 
+                        ? 'bg-emerald-100 text-emerald-700 ring-2 ring-emerald-200' 
+                        : 'hover:bg-emerald-100 hover:text-emerald-700'
+                    }`}
                     onClick={() => setStatusFilter('paid')}
                   >
                     <CheckCircle2 className="h-3 w-3 mr-1" />
@@ -703,14 +738,15 @@ export default function InvoicesPage() {
                 >
                   <Badge 
                     variant="secondary" 
-                    className="rounded-full hover:bg-blue-100 hover:text-blue-700 transition-colors cursor-pointer px-3 py-1"
-                    onClick={() => {
-                      setSortBy('amount')
-                      setSortOrder('desc')
-                    }}
+                    className={`rounded-full transition-colors cursor-pointer px-3 py-1 ${
+                      statusFilter === 'all' 
+                        ? 'bg-slate-100 text-slate-700 ring-2 ring-slate-200' 
+                        : 'hover:bg-slate-100 hover:text-slate-700'
+                    }`}
+                    onClick={() => setStatusFilter('all')}
                   >
-                    <TrendingUp className="h-3 w-3 mr-1" />
-                    High Value
+                    <RefreshCw className="h-3 w-3 mr-1" />
+                    All Invoices
                   </Badge>
                 </motion.div>
               </div>

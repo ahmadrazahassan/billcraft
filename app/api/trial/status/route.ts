@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyIdToken, getAdminAuthInstance, isFirebaseAdminAvailable } from '@/lib/firebase-admin'
+import { verifyIdToken, isFirebaseAdminAvailable } from '@/lib/firebase-admin'
+import { userService, trialService } from '@/lib/database'
 
 export async function GET(request: NextRequest) {
   try {
@@ -43,88 +44,70 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    const userId = decodedToken.uid
+    const firebaseUid = decodedToken.uid
 
-    // Get user creation date from Firebase Auth
-    let userCreationDate = new Date()
-    
-    try {
-      const adminAuth = getAdminAuthInstance()
-      if (adminAuth) {
-        const userRecord = await adminAuth.getUser(userId)
-        userCreationDate = new Date(userRecord.metadata.creationTime)
-      }
-    } catch (error) {
-      console.warn('Could not fetch user creation date, using current date as fallback')
-      // Fallback to current date if user record can't be found
-      userCreationDate = new Date()
+    // First, get the user from Supabase to get the internal user ID
+    const user = await userService.getCurrentUser(firebaseUid)
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found in database' },
+        { status: 404 }
+      )
     }
 
-    // Calculate trial dates based on actual account creation
-    const trialStartDate = userCreationDate
-    const trialEndDate = new Date(userCreationDate)
-    trialEndDate.setMonth(trialEndDate.getMonth() + 3) // 3 months trial
+    // Get detailed trial status using the enhanced service
+    const { trial, metrics, recommendations } = await trialService.getDetailedTrialStatus(user.id)
 
-    const currentDate = new Date()
-    const remaining = trialEndDate.getTime() - currentDate.getTime()
-    const elapsed = currentDate.getTime() - trialStartDate.getTime()
-    const totalDuration = trialEndDate.getTime() - trialStartDate.getTime()
-    
-    const progressPercentage = Math.min(100, Math.max(0, (elapsed / totalDuration) * 100))
-    const daysRemaining = Math.max(0, Math.ceil(remaining / (1000 * 60 * 60 * 24)))
-    const isExpired = remaining <= 0
+    if (!trial) {
+      // No trial exists, suggest starting one
+      return NextResponse.json({
+        trial: null,
+        trialMetrics: null,
+        recommendations: {
+          action: 'start_trial',
+          message: 'Start your free 90-day trial to access all features',
+          urgency: 'low',
+          suggestedPlan: 'professional'
+        }
+      })
+    }
 
-    const trialData = {
-      userId: userId,
-      plan: 'professional',
-      status: isExpired ? 'expired' : 'active',
-      startDate: trialStartDate.toISOString(),
-      endDate: trialEndDate.toISOString(),
-      remainingDays: daysRemaining,
-      features: {
-        unlimitedInvoices: !isExpired,
-        advancedAutomation: !isExpired,
-        customBranding: !isExpired,
-        multiCurrency: !isExpired,
-        analytics: !isExpired,
-        prioritySupport: !isExpired,
-        teamCollaboration: false,
-        apiAccess: false,
-        ssoIntegration: false,
-        whiteLabel: false
-      },
-      usage: {
-        invoicesCreated: 0, // This would come from actual database
-        customersAdded: 0,
-        paymentsProcessed: 0,
-        reportsGenerated: 0
-      },
-      createdAt: trialStartDate.toISOString(),
-      updatedAt: new Date().toISOString()
+    // Auto-run trial cleanup to ensure expired trials are marked correctly
+    await trialService.cleanupExpiredTrials()
+
+    // Prepare the response with enterprise-grade trial data
+    const trialResponse = {
+      id: trial.id,
+      userId: trial.user_id,
+      plan: trial.plan,
+      status: trial.status,
+      startDate: trial.start_date,
+      endDate: trial.end_date,
+      remainingDays: metrics.daysRemaining,
+      hoursRemaining: metrics.hoursRemaining,
+      progressPercentage: metrics.progressPercentage,
+      isExpired: metrics.isExpired,
+      isExpiringSoon: metrics.isExpiringSoon,
+      isExpiringSoonCritical: metrics.isExpiringSoonCritical,
+      isInGracePeriod: metrics.isInGracePeriod,
+      features: trial.features,
+      usage: trial.usage_stats,
+      createdAt: trial.created_at,
+      updatedAt: trial.updated_at
     }
 
     return NextResponse.json({
-      trial: {
-        ...trialData,
-        progressPercentage: Math.round(progressPercentage),
-        isExpired: isExpired,
-        isExpiringSoon: daysRemaining <= 7 && daysRemaining > 0
-      },
+      trial: trialResponse,
       trialMetrics: {
-        totalDays: 90,
-        daysElapsed: Math.ceil(elapsed / (1000 * 60 * 60 * 24)),
-        daysRemaining: daysRemaining,
-        progressPercentage: Math.round(progressPercentage)
+        totalDays: metrics.totalDays,
+        daysElapsed: metrics.daysElapsed,
+        daysRemaining: metrics.daysRemaining,
+        hoursRemaining: metrics.hoursRemaining,
+        progressPercentage: metrics.progressPercentage,
+        timeRemaining: metrics.remaining,
+        timeElapsed: metrics.elapsed
       },
-      upgradeRecommendation: daysRemaining <= 7 && daysRemaining > 0 ? {
-        message: "Your trial is ending soon! Upgrade now to continue enjoying all features.",
-        urgency: "high",
-        suggestedPlan: "professional"
-      } : isExpired ? {
-        message: "Your trial has expired. Upgrade now to continue using BillCraft.",
-        urgency: "critical",
-        suggestedPlan: "professional"
-      } : null
+      upgradeRecommendation: recommendations
     })
 
   } catch (error: any) {
@@ -140,17 +123,17 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST endpoint to update trial status (e.g., pause, resume, cancel)
+// Handle POST requests for trial actions (cancel, extend, etc.)
 export async function POST(request: NextRequest) {
   try {
     // Check if Firebase Admin is configured
     if (!isFirebaseAdminAvailable()) {
       return NextResponse.json({
-        error: 'Firebase Admin not configured',
-        message: 'Trial system requires Firebase Admin SDK configuration'
+        error: 'Firebase Admin not configured'
       }, { status: 503 })
     }
 
+    // Get authorization header
     const authHeader = request.headers.get('Authorization')
     if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json(
@@ -160,56 +143,61 @@ export async function POST(request: NextRequest) {
     }
 
     const token = authHeader.split(' ')[1]
-    let decodedToken
-    
-    try {
-      decodedToken = await verifyIdToken(token)
-    } catch (error: any) {
-      if (error.message.includes('not configured')) {
-        return NextResponse.json(
-          { error: 'Firebase Admin not configured', details: error.message },
-          { status: 503 }
-        )
-      }
+    const decodedToken = await verifyIdToken(token)
+    const firebaseUid = decodedToken.uid
+
+    // Get the user from Supabase
+    const user = await userService.getCurrentUser(firebaseUid)
+    if (!user) {
       return NextResponse.json(
-        { error: 'Invalid authorization token' },
-        { status: 401 }
+        { error: 'User not found in database' },
+        { status: 404 }
       )
     }
 
-    const { action, reason } = await request.json()
-    const userId = decodedToken.uid
+    const { action, reason, additionalDays } = await request.json()
 
-    // Validate action
-    const validActions = ['pause', 'resume', 'cancel', 'extend']
-    if (!validActions.includes(action)) {
+    switch (action) {
+      case 'cancel':
+        await trialService.updateTrialStatus(user.id, 'cancelled')
+        return NextResponse.json({
+          success: true,
+          message: 'Trial cancelled successfully'
+        })
+
+      case 'extend':
+        if (!additionalDays || additionalDays <= 0) {
       return NextResponse.json(
-        { error: `Invalid action. Valid actions: ${validActions.join(', ')}` },
+            { error: 'Valid additionalDays required for extension' },
         { status: 400 }
       )
     }
-
-    // In a real implementation, update trial status in database
-    const updatedTrial = {
-      userId: userId,
-      status: action === 'cancel' ? 'cancelled' : action === 'pause' ? 'paused' : 'active',
-      action: action,
-      reason: reason || '',
-      updatedAt: new Date().toISOString()
-    }
-
+        const extendedTrial = await trialService.extendTrial(user.id, additionalDays, reason)
+        if (!extendedTrial) {
+          return NextResponse.json(
+            { error: 'Trial not found or could not be extended' },
+            { status: 404 }
+          )
+        }
     return NextResponse.json({
       success: true,
-      message: `Trial ${action}d successfully`,
-      trial: updatedTrial
-    })
+          message: `Trial extended by ${additionalDays} days`,
+          trial: extendedTrial
+        })
+
+      default:
+        return NextResponse.json(
+          { error: 'Invalid action. Supported actions: cancel, extend' },
+          { status: 400 }
+        )
+    }
 
   } catch (error: any) {
-    console.error('Trial status update error:', error)
+    console.error('Trial action error:', error)
     
     return NextResponse.json(
       { 
-        error: 'Failed to update trial status',
+        error: 'Failed to perform trial action',
         details: error.message 
       },
       { status: 500 }
