@@ -10,7 +10,6 @@ import Link from 'next/link'
 import { 
   ArrowLeft, 
   Save, 
-  Sparkles, 
   Building2, 
   User, 
   Mail, 
@@ -160,7 +159,6 @@ export default function CreateClientPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isChatAIOpen, setIsChatAIOpen] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
-  const [isAIFilling, setIsAIFilling] = useState(false)
   
   const { user } = useAuth()
   const { toast } = useToast()
@@ -229,42 +227,7 @@ export default function CreateClientPage() {
     }
   }
 
-  const fillWithAI = async () => {
-    setIsAIFilling(true)
-    try {
-      // Simulate AI generation
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
-      const sampleData = {
-        name: 'Sarah Johnson',
-        email: 'sarah.johnson@techsolutions.com',
-        company: 'TechSolutions Inc.',
-        phone: '+1 (555) 123-4567',
-        address: '123 Business Plaza, Suite 450',
-        city: 'San Francisco, CA 94102',
-        website: 'https://techsolutions.com',
-        notes: 'Potential long-term client for web development projects. Interested in custom solutions and ongoing maintenance.'
-      }
-      
-      Object.entries(sampleData).forEach(([key, value]) => {
-        setValue(key as keyof ClientForm, value)
-      })
-      
-      toast({
-        title: "✨ AI Magic Complete!",
-        description: "Client information has been auto-filled. Review and modify as needed.",
-      })
-      
-    } catch (error) {
-      toast({
-        title: "AI Fill Failed",
-        description: "Could not generate client data. Please fill manually.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsAIFilling(false)
-    }
-  }
+
 
   const clearForm = () => {
     reset()
@@ -378,24 +341,7 @@ export default function CreateClientPage() {
                   AI Assistant
                 </Button>
               </motion.div>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Button
-                  type="button"
-                  onClick={fillWithAI}
-                  disabled={isAIFilling}
-                  className="rounded-2xl bg-gradient-to-r from-emerald-600 to-blue-600 hover:from-emerald-700 hover:to-blue-700 shadow-lg"
-                >
-                  {isAIFilling ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Sparkles className="h-4 w-4 mr-2" />
-                  )}
-                  {isAIFilling ? 'Generating...' : 'Fill with AI'}
-                </Button>
-              </motion.div>
+
             </div>
           </div>
 

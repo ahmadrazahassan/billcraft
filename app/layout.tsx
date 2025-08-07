@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google'
 import { AuthProvider } from '@/contexts/auth-context'
 import { Toaster } from '@/components/ui/toaster'
 import { FloatingAIAssistant } from '@/components/chat/floating-ai-assistant'
+import { LenisProvider } from '@/components/lenis-provider'
 
 // Clean, professional font configuration
 const inter = Inter({ 
@@ -71,16 +72,18 @@ export default function RootLayout({
         <link rel="shortcut icon" href="/favicon.svg" />
       </head>
       <body className="min-h-screen bg-background font-sans antialiased">
-        <AuthProvider>
-          {children}
-          <Toaster />
-          
-          {/* Global Floating AI Assistant - Shows on all pages */}
-          <FloatingAIAssistant 
-            position="bottom-right"
-            showOnAllPages={true}
-          />
-        </AuthProvider>
+        <LenisProvider>
+          <AuthProvider>
+            {children}
+            <Toaster />
+            
+            {/* Global Floating AI Assistant - Shows on all pages */}
+            <FloatingAIAssistant 
+              position="bottom-right"
+              showOnAllPages={true}
+            />
+          </AuthProvider>
+        </LenisProvider>
       </body>
     </html>
   )

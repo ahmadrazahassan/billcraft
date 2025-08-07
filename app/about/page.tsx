@@ -21,7 +21,6 @@ import {
   ArrowRight,
   Quote,
   Calendar,
-  TrendingUp,
   MapPin,
   Building,
   ChevronDown,
@@ -43,42 +42,7 @@ import {
   FileText
 } from 'lucide-react'
 
-// Advanced counter component
-function AnimatedCounter({ end, duration = 2000, suffix = '' }: { end: number; duration?: number; suffix?: string }) {
-  const [count, setCount] = useState(0)
-  const [isVisible, setIsVisible] = useState(false)
-  const ref = useRef(null)
-  const inView = useInView(ref)
 
-  useEffect(() => {
-    if (inView && !isVisible) {
-      setIsVisible(true)
-      let startTime: number
-      let animationFrame: number
-
-      const animate = (currentTime: number) => {
-        if (!startTime) startTime = currentTime
-        const progress = Math.min((currentTime - startTime) / duration, 1)
-        
-        setCount(Math.floor(progress * end))
-        
-        if (progress < 1) {
-          animationFrame = requestAnimationFrame(animate)
-        }
-      }
-      
-      animationFrame = requestAnimationFrame(animate)
-      
-      return () => cancelAnimationFrame(animationFrame)
-    }
-  }, [inView, end, duration, isVisible])
-
-  return (
-    <span ref={ref} className="font-bold">
-      {count.toLocaleString()}{suffix}
-    </span>
-  )
-}
 
 const values = [
   {
@@ -249,14 +213,7 @@ const milestones = [
   }
 ]
 
-const stats = [
-  { number: 25000, label: 'Happy Customers', suffix: '+', icon: Users, color: 'text-blue-600' },
-  { number: 2500000, label: 'Invoices Generated', suffix: '+', icon: FileText, color: 'text-green-600' },
-  { number: 99.9, label: 'Uptime SLA', suffix: '%', icon: Shield, color: 'text-purple-600' },
-  { number: 50, label: 'Countries Served', suffix: '+', icon: Globe, color: 'text-orange-600' },
-  { number: 150, label: 'Team Members', suffix: '+', icon: Building, color: 'text-pink-600' },
-  { number: 25, label: 'Funding Raised', suffix: 'M', icon: TrendingUp, color: 'text-indigo-600' }
-]
+
 
 const offices = [
   {
@@ -383,35 +340,91 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Advanced Stats Section */}
-      <section className="py-20 bg-white/70 backdrop-blur-sm">
+      {/* Mission & Impact Section */}
+      <section className="py-24 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
         <div className="container mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
-            {stats.map((stat, index) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                className="text-center group"
-              >
-                <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-2xl scale-0 group-hover:scale-100 transition-transform duration-300" />
-                  <div className="relative p-6">
-                    <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl mb-4 ${stat.color.replace('text-', 'bg-')}/10`}>
-                      <stat.icon className={`w-6 h-6 ${stat.color}`} />
-                    </div>
-                    <div className={`text-3xl lg:text-4xl font-bold ${stat.color} mb-2`}>
-                      <AnimatedCounter end={stat.number} suffix={stat.suffix} />
-                    </div>
-                    <div className="text-slate-600 font-medium text-sm">
-                      {stat.label}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-center mb-16"
+          >
+            <Badge variant="outline" className="mb-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-blue-200">
+              <Sparkles className="w-4 h-4 mr-2 text-blue-600" />
+              Our Impact
+            </Badge>
+            <h2 className="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent mb-6">
+              Transforming Business Operations
+            </h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              Every day, we help thousands of businesses streamline their invoicing process with AI-powered automation and professional tools.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="bg-white/70 backdrop-blur-sm rounded-3xl p-8 border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mb-6">
+                <Users className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">Global Reach</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Serving businesses across multiple countries with localized features and multi-currency support for international commerce.
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="bg-white/70 backdrop-blur-sm rounded-3xl p-8 border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center mb-6">
+                <FileText className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">AI-Powered Efficiency</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Our advanced AI helps automate invoice creation, smart form filling, and provides intelligent business insights to save time.
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="bg-white/70 backdrop-blur-sm rounded-3xl p-8 border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6">
+                <Shield className="w-8 h-8 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">Enterprise Security</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Built with enterprise-grade security, data encryption, and reliable infrastructure to keep your business data safe and secure.
+              </p>
+            </motion.div>
           </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="text-center mt-16"
+          >
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-12 text-white">
+              <h3 className="text-3xl font-bold mb-4">Ready to Transform Your Business?</h3>
+              <p className="text-xl mb-8 text-blue-100">
+                Join thousands of businesses already using BillCraft to streamline their invoicing process.
+              </p>
+              <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 px-8 py-4 rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300">
+                Start Your Free Trial
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
+            </div>
+          </motion.div>
         </div>
       </section>
 

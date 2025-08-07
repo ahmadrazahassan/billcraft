@@ -3,6 +3,23 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Lenis Smooth Scrolling Styles */
+html {
+  scroll-behavior: auto !important;
+}
+
+html.lenis {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
 @layer base {
   :root {
     /* Professional Color Palette - Orange + Light Blue */
