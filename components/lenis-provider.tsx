@@ -25,19 +25,10 @@ export function LenisProvider({ children }: LenisProviderProps) {
   const lenisRef = useRef<Lenis | null>(null)
 
   useEffect(() => {
-    // Initialize Lenis with optimized settings
+    // Initialize Lenis with minimal settings that work with v1.0.42
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // easeOutExpo
-      direction: 'vertical',
-      gestureDirection: 'vertical',
-      smooth: true,
-      mouseMultiplier: 1,
-      smoothTouch: false, // Disable on touch devices for better performance
-      touchMultiplier: 2,
-      infinite: false,
-      normalizeWheel: true,
-      wheelMultiplier: 1,
     })
 
     lenisRef.current = lenis
@@ -58,7 +49,7 @@ export function LenisProvider({ children }: LenisProviderProps) {
       const target = e.target as HTMLAnchorElement
       if (target.tagName === 'A' && target.hash) {
         e.preventDefault()
-        const element = document.querySelector(target.hash)
+        const element = document.querySelector(target.hash) as HTMLElement
         if (element) {
           lenis.scrollTo(element, { offset: -100 }) // Add some offset for headers
         }
