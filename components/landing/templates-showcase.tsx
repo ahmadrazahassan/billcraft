@@ -24,6 +24,7 @@ import { CorporateRedTemplate } from '@/components/templates/corporate-red'
 import { CreativeTealTemplate } from '@/components/templates/creative-teal'
 import { ClassicBrownTemplate } from '@/components/templates/classic-brown'
 import { generateSampleData } from '@/lib/sample-invoice-data'
+import { MediumTemplatePreview } from '@/components/templates/optimized-template-preview'
 
 const templateComponents = {
   'minimal-white': MinimalWhiteTemplate,
@@ -36,15 +37,6 @@ const templateComponents = {
   'corporate-red': CorporateRedTemplate,
   'creative-teal': CreativeTealTemplate,
   'classic-brown': ClassicBrownTemplate,
-}
-
-// Template Preview Component
-function TemplatePreview({ templateId }: { templateId: string }) {
-  const TemplateComponent = templateComponents[templateId as keyof typeof templateComponents]
-  if (!TemplateComponent) return null
-  
-  const sampleData = generateSampleData(templateId)
-  return <TemplateComponent data={sampleData} />
 }
 
 const featuredTemplates = [
@@ -166,13 +158,11 @@ export function TemplatesShowcase() {
               viewport={{ once: true }}
             >
               <Card className="group hover:shadow-xl transition-all duration-300 overflow-hidden border-border bg-background">
-                {/* Template Preview */}
-                <div className={`relative h-48 bg-gradient-to-br ${colorSchemes[template.color as keyof typeof colorSchemes]} border-b overflow-hidden`}>
-                  {/* Actual Template Preview */}
-                  <div className="h-full overflow-hidden">
-                    <div style={{ transform: 'scale(0.12)', transformOrigin: 'top left', width: '833%', height: '833%' }}>
-                      <TemplatePreview templateId={template.id} />
-                    </div>
+                {/* Enhanced Template Preview with Optimal Scaling */}
+                <div className={`relative bg-gradient-to-br ${colorSchemes[template.color as keyof typeof colorSchemes]} border-b overflow-hidden`}>
+                  {/* Professional Template Preview - Much Larger and Clearer */}
+                  <div className="h-full overflow-hidden p-3">
+                    <MediumTemplatePreview templateId={template.id} className="rounded-lg shadow-lg" />
                   </div>
 
                   {/* Overlay */}

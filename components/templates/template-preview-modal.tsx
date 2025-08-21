@@ -32,6 +32,21 @@ import { ModernOrangeTemplate } from './modern-orange'
 import { CorporateRedTemplate } from './corporate-red'
 import { CreativeTealTemplate } from './creative-teal'
 import { ClassicBrownTemplate } from './classic-brown'
+import { GradientSunsetTemplate } from './gradient-sunset'
+import { NeonCyberTemplate } from './neon-cyber'
+import { ElegantRoseGoldTemplate } from './elegant-rose-gold'
+import { DarkProfessionalTemplate } from './dark-professional'
+import { OceanWaveTemplate } from './ocean-wave'
+import { ForestGreenTemplate } from './forest-green'
+import { CoralModernTemplate } from './coral-modern'
+import { PlatinumEliteTemplate } from './platinum-elite'
+import { VibrantRainbowTemplate } from './vibrant-rainbow'
+import { MinimalGlassTemplate } from './minimal-glass'
+import { ElectricBlueTemplate } from './electric-blue'
+import { GoldenLuxuryTemplate } from './golden-luxury'
+import { PinkCreativeTemplate } from './pink-creative'
+import { EmeraldCorporateTemplate } from './emerald-corporate'
+import { SilverTechTemplate } from './silver-tech'
 
 interface TemplatePreviewModalProps {
   isOpen: boolean
@@ -57,6 +72,21 @@ const templateComponents = {
   'corporate-red': CorporateRedTemplate,
   'creative-teal': CreativeTealTemplate,
   'classic-brown': ClassicBrownTemplate,
+  'gradient-sunset': GradientSunsetTemplate,
+  'neon-cyber': NeonCyberTemplate,
+  'elegant-rose-gold': ElegantRoseGoldTemplate,
+  'dark-professional': DarkProfessionalTemplate,
+  'ocean-wave': OceanWaveTemplate,
+  'forest-green': ForestGreenTemplate,
+  'coral-modern': CoralModernTemplate,
+  'platinum-elite': PlatinumEliteTemplate,
+  'vibrant-rainbow': VibrantRainbowTemplate,
+  'minimal-glass': MinimalGlassTemplate,
+  'electric-blue': ElectricBlueTemplate,
+  'golden-luxury': GoldenLuxuryTemplate,
+  'pink-creative': PinkCreativeTemplate,
+  'emerald-corporate': EmeraldCorporateTemplate,
+  'silver-tech': SilverTechTemplate,
 }
 
 export function TemplatePreviewModal({ isOpen, onClose, template }: TemplatePreviewModalProps) {

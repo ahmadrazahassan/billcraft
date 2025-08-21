@@ -42,6 +42,7 @@ import { CorporateRedTemplate } from '@/components/templates/corporate-red'
 import { CreativeTealTemplate } from '@/components/templates/creative-teal'
 import { ClassicBrownTemplate } from '@/components/templates/classic-brown'
 import { generateSampleData } from '@/lib/sample-invoice-data'
+import { LargeTemplatePreview } from '@/components/templates/optimized-template-preview'
 
 const templateComponents = {
   'minimal-white': MinimalWhiteTemplate,
@@ -54,46 +55,6 @@ const templateComponents = {
   'corporate-red': CorporateRedTemplate,
   'creative-teal': CreativeTealTemplate,
   'classic-brown': ClassicBrownTemplate,
-}
-
-// Perfect Template Thumbnail Preview - Large & Clear Display
-function TemplatePreview({ templateId }: { templateId: string }) {
-  const TemplateComponent = templateComponents[templateId as keyof typeof templateComponents]
-  if (!TemplateComponent) return null
-  
-  const sampleData = generateSampleData(templateId)
-  
-  return (
-    <div className="w-full h-full relative overflow-hidden bg-white">
-      {/* Large scaling for maximum visibility and clarity */}
-      <div 
-        className="origin-top-left absolute"
-        style={{ 
-          transform: 'scale(0.45)', 
-          width: '222%', 
-          height: '222%',
-          top: '0px',
-          left: '0px'
-        }}
-      >
-        {/* Optimized container for large, clear thumbnail display */}
-        <div 
-          className="bg-white shadow-sm"
-          style={{
-            width: '600px',    // Reduced width for better fit
-            height: '800px',   // Reduced height for better aspect ratio
-            minWidth: '600px',
-            minHeight: '800px',
-            padding: '0'
-          }}
-        >
-          <div className="w-full h-full overflow-hidden">
-            <TemplateComponent data={sampleData} isPreview={true} />
-          </div>
-        </div>
-      </div>
-    </div>
-  )
 }
 
 // Template data with different categories and styles
@@ -486,10 +447,10 @@ export default function TemplatesPage() {
                     <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-black/5"></div>
                   </div>
                   
-                  {/* Perfect Template Preview Container */}
+                  {/* Perfect Template Preview Container - Enhanced with Optimized Scaling */}
                   <div className="absolute inset-0 p-6">
                     <div className="w-full h-full rounded-[1.5rem] overflow-hidden bg-white shadow-2xl border border-white/60 relative group-hover:shadow-3xl transition-all duration-500">
-                      <TemplatePreview templateId={template.id} />
+                      <LargeTemplatePreview templateId={template.id} className="w-full h-full" />
                     </div>
                   </div>
 

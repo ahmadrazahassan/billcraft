@@ -221,9 +221,9 @@ export function CorporateRedTemplate({ data, isPreview = false }: CorporateRedTe
                 Executive Payment Terms
               </h4>
               <div className="space-y-2 text-slate-300">
-                <p>• Payment due within 30 days of invoice date</p>
-                <p>• Wire transfers preferred for amounts over $10,000</p>
-                <p>• Late payments subject to 2% monthly penalty</p>
+                <p>- Payment due within 30 days of invoice date</p>
+                <p>- Wire transfers preferred for amounts over $10,000</p>
+                <p>- Late payments subject to 2% monthly penalty</p>
               </div>
             </div>
             <div className="text-right">

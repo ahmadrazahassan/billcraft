@@ -185,14 +185,14 @@ export function CorporateNavyTemplate({ data, isPreview = false }: CorporateNavy
           <h4 className="text-lg font-semibold mb-3">Payment Terms & Conditions</h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
             <div>
-              <p className="mb-2">• Payment is due within 30 days of invoice date</p>
-              <p className="mb-2">• Late payments subject to 1.5% monthly charge</p>
-              <p>• All work performed is subject to our standard terms</p>
+              <p className="mb-2">- Payment is due within 30 days of invoice date</p>
+              <p className="mb-2">- Late payments subject to 1.5% monthly charge</p>
+              <p>- All work performed is subject to our standard terms</p>
             </div>
             <div>
-              <p className="mb-2">• Wire transfers preferred for international clients</p>
-              <p className="mb-2">• Questions? Contact our accounting department</p>
-              <p>• Thank you for choosing our professional services</p>
+              <p className="mb-2">- Wire transfers preferred for international clients</p>
+              <p className="mb-2">- Questions? Contact our accounting department</p>
+              <p>- Thank you for choosing our professional services</p>
             </div>
           </div>
         </div>

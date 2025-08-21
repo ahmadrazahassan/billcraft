@@ -186,9 +186,9 @@ export function ClassicGreenTemplate({ data, isPreview = false }: ClassicGreenTe
           </div>
           <div>
             <p className="text-slate-700 mb-2"><strong>Terms:</strong></p>
-            <p className="text-slate-600">• Payment due within 30 days</p>
-            <p className="text-slate-600">• Late fees may apply</p>
-            <p className="text-slate-600">• Thank you for your business!</p>
+            <p className="text-slate-600">- Payment due within 30 days</p>
+            <p className="text-slate-600">- Late fees may apply</p>
+            <p className="text-slate-600">- Thank you for your business!</p>
           </div>
         </div>
       </div>
