@@ -15,6 +15,7 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://billcraft.com'),
   title: 'BillCraft - Professional Invoice Generator',
   description: 'Create professional invoices instantly with our modern, easy-to-use invoice generator',
   keywords: ['invoice', 'billing', 'generator', 'business', 'professional', 'automation'],

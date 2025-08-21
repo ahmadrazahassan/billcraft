@@ -7,7 +7,7 @@ import { ArrowRight, Star, FileText } from 'lucide-react'
 
 export function Hero() {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-background pt-20 md:pt-24 lg:pt-28">
       {/* Enhanced background elements */}
       <div className="absolute inset-0">
         <div className="absolute top-20 left-10 w-96 h-96 bg-primary/8 rounded-full blur-3xl" />
@@ -15,30 +15,13 @@ export function Hero() {
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[32rem] h-[32rem] bg-primary/3 rounded-full blur-3xl" />
       </div>
       
-      <div className="container mx-auto container-padding relative z-10">
+      <div className="container mx-auto container-padding relative z-10 py-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-20 items-center">
             
             {/* Left Content */}
-            <div className="text-center lg:text-left space-y-8">
-              {/* Ultra Compact Badge */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="inline-flex items-center space-x-1 bg-white/50 backdrop-blur-sm border border-primary/15 rounded-full px-3 py-1 shadow-sm"
-              >
-                <div className="flex items-center space-x-0.5">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-2.5 w-2.5 text-primary fill-primary" />
-                  ))}
-                </div>
-                <span className="text-xs font-medium text-foreground/80">
-                  Trusted
-            </span>
-          </motion.div>
-
-          {/* Main Headline */}
+            <div className="text-center lg:text-left space-y-8 mt-4 md:mt-6 lg:mt-8">
+              {/* Main Headline */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -196,7 +179,7 @@ export function Hero() {
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 1, delay: 0.3 }}
-              className="relative"
+              className="relative mt-8 lg:mt-0"
             >
               <div className="relative">
                 {/* Main featured invoice mockup */}

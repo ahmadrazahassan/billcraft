@@ -106,26 +106,23 @@ module.exports = {
   			sm: 'calc(var(--radius) - 4px)'
   		},
   		fontFamily: {
-  			// Professional font stack
+  			// Professional font stack using CSS variables from next/font
   			sans: [
-  				'Inter',
-  				'Work Sans',
+  				'var(--font-inter)',
   				'system-ui',
   				'-apple-system',
   				'BlinkMacSystemFont',
   				'sans-serif'
   			],
   			display: [
-  				'Geist',
-  				'Inter',
+  				'var(--font-inter)',
   				'system-ui',
   				'-apple-system',
   				'BlinkMacSystemFont',
   				'sans-serif'
   			],
   			body: [
-  				'Inter',
-  				'Work Sans',
+  				'var(--font-inter)',
   				'system-ui',
   				'-apple-system',
   				'BlinkMacSystemFont',

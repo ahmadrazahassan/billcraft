@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Hero } from '@/components/landing/hero'
 import { TemplatesShowcase } from '@/components/landing/templates-showcase'
+
 import { Pricing } from '@/components/landing/pricing'
 import { Testimonials } from '@/components/landing/testimonials'
 import { Footer } from '@/components/landing/footer'

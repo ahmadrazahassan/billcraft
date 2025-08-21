@@ -1,12 +1,36 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+// Environment validation with fallbacks
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://yuplzhbijgxaizguurdg.supabase.co'
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+
+// Environment diagnostics
+console.log('🔍 SUPABASE ENVIRONMENT CHECK:')
+console.log('- URL:', supabaseUrl)
+console.log('- Anon Key Present:', !!supabaseAnonKey)
+console.log('- Anon Key Length:', supabaseAnonKey.length)
+console.log('- Service Key Present:', !!process.env.SUPABASE_SERVICE_ROLE_KEY)
+console.log('- Service Key Length:', process.env.SUPABASE_SERVICE_ROLE_KEY?.length || 0)
 
 // Client-side Supabase client (uses anon key)
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-// Helper function to get admin client with dynamic creation
+// Network connectivity test
+async function testNetworkConnectivity(url: string): Promise<boolean> {
+  try {
+    const response = await fetch(url + '/health', {
+      method: 'GET',
+      timeout: 5000,
+      signal: AbortSignal.timeout(5000)
+    })
+    return response.ok
+  } catch (error) {
+    console.warn('⚠️ Network connectivity test failed:', error)
+    return false
+  }
+}
+
+// Enhanced admin client with network diagnostics
 export const getSupabaseAdmin = () => {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   
@@ -15,13 +39,20 @@ export const getSupabaseAdmin = () => {
   console.log('- Service Key Length:', serviceKey?.length || 0)
   console.log('- URL:', supabaseUrl)
   
+  // Validate environment variables
+  if (!supabaseUrl) {
+    throw new Error('NEXT_PUBLIC_SUPABASE_URL is not configured. Please add it to your environment variables.')
+  }
+  
   if (!serviceKey) {
     const errorMsg = `❌ SUPABASE SERVICE KEY MISSING! 
     Environment check:
     - SUPABASE_SERVICE_ROLE_KEY: ${serviceKey ? 'SET' : 'NOT SET'}
     - Length: ${serviceKey?.length || 0}
     
-    Make sure your .env.local file has:
+    Create a .env.local file with:
+    NEXT_PUBLIC_SUPABASE_URL=${supabaseUrl}
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
     SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here`
     
     console.error(errorMsg)
@@ -34,6 +65,27 @@ export const getSupabaseAdmin = () => {
       auth: {
         autoRefreshToken: false,
         persistSession: false
+      },
+      global: {
+        headers: {
+          'User-Agent': 'BillCraft/1.0.0'
+        },
+        fetch: (url, options = {}) => {
+          // Add timeout and better error handling to fetch requests
+          const controller = new AbortController()
+          const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+          
+          return fetch(url, {
+            ...options,
+            signal: options.signal || controller.signal,
+            headers: {
+              'Content-Type': 'application/json',
+              ...options.headers
+            }
+          }).finally(() => {
+            clearTimeout(timeoutId)
+          })
+        }
       }
     })
     console.log('✅ Supabase Admin client created successfully')

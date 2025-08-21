@@ -41,13 +41,41 @@ export const userService = {
     }
   },
 
-  // Get current user by Firebase UID
+  // Enhanced network connectivity test
+  async testSupabaseConnectivity(): Promise<boolean> {
+    try {
+      const supabaseAdmin = getSupabaseAdmin()
+      const { data, error } = await supabaseAdmin
+        .from('users')
+        .select('id')
+        .limit(1)
+      
+      if (error && error.code !== 'PGRST116') {
+        console.warn('🔗 Supabase connectivity test failed:', error.message)
+        return false
+      }
+      
+      console.log('✅ Supabase connectivity test passed')
+      return true
+    } catch (error: any) {
+      console.warn('🔗 Supabase connectivity test failed:', error.message)
+      return false
+    }
+  },
+
+  // Get current user by Firebase UID with enhanced error handling
   async getCurrentUser(firebaseUid: string): Promise<Tables<'users'> | null> {
     try {
       console.log('🔍 DATABASE: Getting current user for Firebase UID:', firebaseUid)
       console.log('🔍 DATABASE: Environment check in getCurrentUser:')
       console.log('  - SUPABASE_SERVICE_ROLE_KEY present:', !!process.env.SUPABASE_SERVICE_ROLE_KEY)
       console.log('  - SUPABASE_SERVICE_ROLE_KEY length:', process.env.SUPABASE_SERVICE_ROLE_KEY?.length || 0)
+      
+      // Test connectivity first
+      const isConnected = await this.testSupabaseConnectivity()
+      if (!isConnected) {
+        throw new Error('Unable to connect to Supabase. Please check your internet connection and environment configuration.')
+      }
       
       const supabaseAdmin = getSupabaseAdmin()
       const { data, error } = await supabaseAdmin
@@ -62,14 +90,38 @@ export const userService = {
           console.log('User not found in Supabase for Firebase UID:', firebaseUid)
           return null
         }
-        console.error('Error fetching user from Supabase:', error)
-        throw error
+        
+        // Enhance error information
+        const enhancedError = {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint,
+          originalError: error
+        }
+        
+        console.error('Error fetching user from Supabase:', enhancedError)
+        throw new Error(`Database query failed: ${error.message} (Code: ${error.code})`)
       }
       
       console.log('User found in Supabase:', data?.id)
       return data
-    } catch (error) {
-      console.error('Error fetching user:', error)
+    } catch (error: any) {
+      console.error('Error fetching user:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      })
+      
+      // Provide more specific error messages
+      if (error.message.includes('fetch failed')) {
+        throw new Error('Network connection failed. Please check your internet connection and try again.')
+      } else if (error.message.includes('timeout')) {
+        throw new Error('Request timed out. Please check your connection and try again.')
+      } else if (error.message.includes('service role key')) {
+        throw new Error('Database configuration error. Please check your environment variables.')
+      }
+      
       throw error
     }
   },
