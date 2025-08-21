@@ -1,6 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { userService } from '@/lib/database'
 
+// Helper function to implement fetch with timeout
+async function fetchWithTimeout(url: string, options: RequestInit = {}, timeoutMs: number = 5000): Promise<Response> {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+  
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    })
+    clearTimeout(timeoutId)
+    return response
+  } catch (error) {
+    clearTimeout(timeoutId)
+    throw error
+  }
+}
+
 // Enhanced diagnostics function
 async function performDiagnostics() {
   const diagnostics = {
@@ -22,10 +40,9 @@ async function performDiagnostics() {
 
   // Test internet connectivity
   try {
-    const response = await fetch('https://httpbin.org/get', { 
-      method: 'GET',
-      timeout: 5000 
-    })
+    const response = await fetchWithTimeout('https://httpbin.org/get', { 
+      method: 'GET'
+    }, 5000)
     diagnostics.connectivity.internetAccess = response.ok
   } catch (error) {
     console.warn('Internet connectivity test failed:', error)
@@ -35,10 +52,9 @@ async function performDiagnostics() {
   // Test DNS resolution for Supabase
   try {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://yuplzhbijgxaizguurdg.supabase.co'
-    const response = await fetch(url + '/health', { 
-      method: 'GET',
-      timeout: 5000 
-    })
+    const response = await fetchWithTimeout(url + '/health', { 
+      method: 'GET'
+    }, 5000)
     diagnostics.connectivity.dnsResolution = true
     diagnostics.connectivity.supabaseReachable = response.ok
   } catch (error: any) {

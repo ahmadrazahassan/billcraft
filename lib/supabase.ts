@@ -18,11 +18,15 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 // Network connectivity test
 async function testNetworkConnectivity(url: string): Promise<boolean> {
   try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 5000)
+    
     const response = await fetch(url + '/health', {
       method: 'GET',
-      timeout: 5000,
-      signal: AbortSignal.timeout(5000)
+      signal: controller.signal
     })
+    
+    clearTimeout(timeoutId)
     return response.ok
   } catch (error) {
     console.warn('⚠️ Network connectivity test failed:', error)
