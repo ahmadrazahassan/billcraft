@@ -255,6 +255,7 @@ CREATE TABLE IF NOT EXISTS user_trials (
     invoices_created INTEGER DEFAULT 0,
     clients_created INTEGER DEFAULT 0,
     features_used JSONB DEFAULT '{}',
+    usage_stats JSONB DEFAULT '{}',
     last_activity_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     
     -- Timestamps

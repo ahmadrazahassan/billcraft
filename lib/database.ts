@@ -803,6 +803,7 @@ export const trialService = {
           status: 'active',
           trial_start: startDate.toISOString(),
           trial_end: endDate.toISOString(),
+          trial_days: 90, // 3 months = 90 days
           features_used: features,
           usage_stats: {
             invoicesCreated: 0,
