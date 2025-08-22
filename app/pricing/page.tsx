@@ -34,36 +34,38 @@ import {
 
 const plans = [
   {
-    name: 'Starter',
+    name: 'Free',
     price: { monthly: 0, yearly: 0 },
     originalPrice: { monthly: 0, yearly: 0 },
-    period: 'forever',
-    description: 'Perfect for freelancers and individuals just getting started with professional invoicing.',
-    shortDesc: 'Essential features for getting started',
+    period: 'for 3 months',
+    description: 'Perfect for freelancers and individuals just getting started. Try all professional features completely free for 3 months.',
+    shortDesc: 'Complete 3-month free trial',
     icon: Rocket,
     gradient: 'from-emerald-500 via-teal-500 to-cyan-600',
     bgGradient: 'from-emerald-50 via-teal-50 to-cyan-50',
     features: [
-      { name: 'Up to 5 invoices per month', icon: CheckCircle },
-      { name: 'Professional PDF export', icon: CheckCircle },
-      { name: '5+ Beautiful templates', icon: CheckCircle },
-      { name: 'Basic client management', icon: CheckCircle },
-      { name: 'Email support', icon: CheckCircle },
-      { name: 'Mobile app access', icon: CheckCircle }
+      { name: 'All Professional features included', icon: CheckCircle },
+      { name: 'Unlimited invoices & clients', icon: CheckCircle },
+      { name: 'AI-powered automation', icon: Palette },
+      { name: '25+ Beautiful templates', icon: CheckCircle },
+      { name: 'Payment integrations', icon: CheckCircle },
+      { name: 'Team collaboration', icon: Users },
+      { name: 'Priority email support', icon: Headphones },
+      { name: 'No credit card required', icon: Shield }
     ],
-    buttonText: 'Get Started Free',
-    buttonStyle: 'outline',
+    buttonText: 'Start 3-Month Free Trial',
+    buttonStyle: 'gradient',
     popular: false,
-    badge: 'Free Forever',
-    savings: null,
-    href: '/auth/signup'
+    badge: '3 Months Free',
+    savings: 'No commitment required',
+    href: '/auth/signup?plan=free&trial=true'
   },
   {
     name: 'Professional',
-    price: { monthly: 15, yearly: 12 },
-    originalPrice: { monthly: 15, yearly: 15 },
+    price: { monthly: 10, yearly: 7 },
+    originalPrice: { monthly: 10, yearly: 10 },
     period: 'per month',
-    description: 'Best for growing businesses that need advanced features, AI automation, and team collaboration.',
+    description: 'Best for growing businesses that need advanced features, AI automation, and team collaboration. Includes 3-month free trial.',
     shortDesc: 'Advanced features + AI automation',
     icon: Layers,
     gradient: 'from-indigo-600 via-purple-600 to-violet-700',
@@ -76,7 +78,7 @@ const plans = [
       { name: 'Advanced analytics & reports', icon: BarChart3 },
       { name: 'Payment integration (Stripe, PayPal)', icon: CheckCircle },
       { name: 'Automated reminders & follow-ups', icon: Timer },
-      { name: 'Team collaboration (up to 3 users)', icon: Users },
+      { name: 'Team collaboration (up to 5 users)', icon: Users },
       { name: 'Priority email support', icon: Headphones },
       { name: 'Invoice approval workflow', icon: CheckCircle }
     ],
@@ -84,15 +86,15 @@ const plans = [
     buttonStyle: 'gradient',
     popular: true,
     badge: 'Most Popular',
-    savings: '20% off yearly',
+    savings: '30% off yearly',
     href: '/auth/signup?plan=professional&trial=true'
   },
   {
     name: 'Enterprise',
-    price: { monthly: 49, yearly: 39 },
-    originalPrice: { monthly: 49, yearly: 49 },
+    price: { monthly: 20, yearly: 15 },
+    originalPrice: { monthly: 20, yearly: 20 },
     period: 'per month',
-    description: 'For large teams and enterprises that need advanced security, integrations, and dedicated support.',
+    description: 'For large teams and enterprises that need advanced security, integrations, and dedicated support. Includes 3-month free trial.',
     shortDesc: 'Enterprise-grade security & integrations',
     icon: Crown,
     gradient: 'from-purple-600 via-indigo-700 to-blue-800',
@@ -111,12 +113,12 @@ const plans = [
       { name: 'Custom training & onboarding', icon: CheckCircle },
       { name: 'SLA guarantee', icon: CheckCircle }
     ],
-    buttonText: 'Contact Sales',
-    buttonStyle: 'outline',
+    buttonText: 'Start 3-Month Free Trial',
+    buttonStyle: 'gradient',
     popular: false,
     badge: 'Enterprise',
-    savings: '20% off yearly',
-    href: '/contact?plan=enterprise'
+    savings: '25% off yearly',
+    href: '/auth/signup?plan=enterprise&trial=true'
   }
 ]
 
@@ -304,7 +306,7 @@ export default function PricingPage() {
                         >
                           <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-3 rounded-full text-sm font-bold shadow-2xl shadow-indigo-500/25 border border-white/20 backdrop-blur-sm">
                             ⚡ Most Popular
-                          </div>
+                        </div>
                         </motion.div>
                       )}
 
@@ -334,13 +336,13 @@ export default function PricingPage() {
                           <div className="mb-4">
                             <div className="flex items-baseline justify-center space-x-2">
                               <span className="text-5xl font-black bg-gradient-to-r from-slate-900 to-indigo-900 bg-clip-text text-transparent">
-                                ${currentPrice}
-                              </span>
+                              ${currentPrice}
+                            </span>
                               {originalPrice > currentPrice && isYearly && (
                                 <span className="text-xl text-slate-400 line-through">
-                                  ${originalPrice}
-                                </span>
-                              )}
+                                ${originalPrice}
+                              </span>
+                            )}
                             </div>
                             <div className="text-slate-600 mt-2 font-semibold">
                               {plan.period}
@@ -389,14 +391,14 @@ export default function PricingPage() {
                             whileTap={{ scale: 0.95 }}
                             onClick={() => handlePlanClick(plan)}
                             className={`w-full py-5 rounded-[1.5rem] font-bold text-lg transition-all duration-500 shadow-2xl hover:shadow-3xl ${
-                              plan.popular
+                            plan.popular
                                 ? 'bg-gradient-to-r from-indigo-600 via-purple-600 to-violet-600 hover:from-indigo-700 hover:via-purple-700 hover:to-violet-700 text-white shadow-indigo-500/25'
                                 : plan.name === 'Starter'
                                 ? 'bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-emerald-500/25'
                                 : 'bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 text-white shadow-purple-500/25'
-                            }`}
-                          >
-                            {plan.buttonText}
+                          }`}
+                        >
+                          {plan.buttonText}
                             <ArrowRight className="inline-block ml-3 h-5 w-5" />
                           </motion.button>
                         </div>

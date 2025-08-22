@@ -1,8 +1,16 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Environment validation with fallbacks
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://yuplzhbijgxaizguurdg.supabase.co'
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
+// Environment validation - MUST be set for new project
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+if (!supabaseUrl) {
+  throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL environment variable')
+}
+
+if (!supabaseAnonKey) {
+  throw new Error('Missing NEXT_PUBLIC_SUPABASE_ANON_KEY environment variable')
+}
 
 // Environment diagnostics
 console.log('🔍 SUPABASE ENVIRONMENT CHECK:')
@@ -43,10 +51,7 @@ export const getSupabaseAdmin = () => {
   console.log('- Service Key Length:', serviceKey?.length || 0)
   console.log('- URL:', supabaseUrl)
   
-  // Validate environment variables
-  if (!supabaseUrl) {
-    throw new Error('NEXT_PUBLIC_SUPABASE_URL is not configured. Please add it to your environment variables.')
-  }
+  // Environment is already validated at the top of file
   
   if (!serviceKey) {
     const errorMsg = `❌ SUPABASE SERVICE KEY MISSING! 
@@ -54,10 +59,10 @@ export const getSupabaseAdmin = () => {
     - SUPABASE_SERVICE_ROLE_KEY: ${serviceKey ? 'SET' : 'NOT SET'}
     - Length: ${serviceKey?.length || 0}
     
-    Create a .env.local file with:
-    NEXT_PUBLIC_SUPABASE_URL=${supabaseUrl}
-    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
-    SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here`
+    Please update your .env.local file with your new Supabase credentials:
+    NEXT_PUBLIC_SUPABASE_URL=your_new_project_url
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_new_anon_key
+    SUPABASE_SERVICE_ROLE_KEY=your_new_service_role_key`
     
     console.error(errorMsg)
     throw new Error('Supabase service role key not configured. Please add SUPABASE_SERVICE_ROLE_KEY to your environment variables.')
@@ -72,23 +77,9 @@ export const getSupabaseAdmin = () => {
       },
       global: {
         headers: {
-          'User-Agent': 'BillCraft/1.0.0'
-        },
-        fetch: (url, options = {}) => {
-          // Add timeout and better error handling to fetch requests
-          const controller = new AbortController()
-          const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
-          
-          return fetch(url, {
-            ...options,
-            signal: options.signal || controller.signal,
-            headers: {
-              'Content-Type': 'application/json',
-              ...options.headers
-            }
-          }).finally(() => {
-            clearTimeout(timeoutId)
-          })
+          'User-Agent': 'BillCraft/1.0.0',
+          'apikey': serviceKey,
+          'Authorization': `Bearer ${serviceKey}`
         }
       }
     })
@@ -284,34 +275,64 @@ export interface Database {
           sort_order?: number
         }
       }
-      trials: {
+      user_trials: {
         Row: {
           id: string
           user_id: string
-          plan: 'professional' | 'enterprise'
+          plan_type: 'professional' | 'enterprise'
           status: 'active' | 'expired' | 'cancelled' | 'converted'
-          start_date: string
-          end_date: string
-          features: any
+          trial_start: string
+          trial_end: string
+          trial_days: number
+          original_end_date: string | null
+          extension_days: number
+          extension_reason: string | null
+          converted_to_plan: string | null
+          converted_at: string | null
+          stripe_subscription_id: string | null
+          invoices_created: number
+          clients_created: number
+          features_used: any
+          last_activity_at: string
           usage_stats: any
           created_at: string
           updated_at: string
         }
         Insert: {
           user_id: string
-          plan: 'professional' | 'enterprise'
+          plan_type?: 'professional' | 'enterprise'
           status?: 'active' | 'expired' | 'cancelled' | 'converted'
-          start_date: string
-          end_date: string
-          features?: any
+          trial_start?: string
+          trial_end: string
+          trial_days?: number
+          original_end_date?: string | null
+          extension_days?: number
+          extension_reason?: string | null
+          converted_to_plan?: string | null
+          converted_at?: string | null
+          stripe_subscription_id?: string | null
+          invoices_created?: number
+          clients_created?: number
+          features_used?: any
+          last_activity_at?: string
           usage_stats?: any
         }
         Update: {
-          plan?: 'professional' | 'enterprise'
+          plan_type?: 'professional' | 'enterprise'
           status?: 'active' | 'expired' | 'cancelled' | 'converted'
-          start_date?: string
-          end_date?: string
-          features?: any
+          trial_start?: string
+          trial_end?: string
+          trial_days?: number
+          original_end_date?: string | null
+          extension_days?: number
+          extension_reason?: string | null
+          converted_to_plan?: string | null
+          converted_at?: string | null
+          stripe_subscription_id?: string | null
+          invoices_created?: number
+          clients_created?: number
+          features_used?: any
+          last_activity_at?: string
           usage_stats?: any
         }
       }

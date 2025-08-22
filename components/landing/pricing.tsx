@@ -7,42 +7,46 @@ import Link from 'next/link'
 
 const pricingPlans = [
   {
-    name: 'Starter',
+    name: 'Free',
     price: '$0',
-    period: 'forever',
-    description: 'Perfect for freelancers just getting started with professional invoicing.',
+    period: 'for 3 months',
+    description: 'Perfect for freelancers just getting started. Try all professional features completely free for 3 months.',
     icon: Zap,
-    iconColor: 'text-blue-500',
-    glassColor: 'from-blue-500/10 to-blue-600/5',
+    iconColor: 'text-emerald-500',
+    glassColor: 'from-emerald-500/10 to-emerald-600/5',
     features: [
-      'Up to 5 invoices per month',
-      'Professional PDF export',
-      'Email support',
-      'Modern invoice designs',
-      'Basic tracking & analytics'
+      'All Professional features included',
+      'Unlimited invoices & customers',
+      'AI-powered automation',
+      '25+ Beautiful templates',
+      'Payment integrations',
+      'Team collaboration',
+      'Priority email support',
+      'No credit card required'
     ],
-    buttonText: 'Get Started Free',
-    buttonVariant: 'outline' as const,
-    buttonClass: 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white',
-    popular: false
+    buttonText: 'Start 3-Month Free Trial',
+    buttonVariant: 'default' as const,
+    buttonClass: 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white',
+    popular: false,
+    trialBadge: true
   },
   {
     name: 'Professional',
-    price: '$15',
+    price: '$10',
     period: 'per month',
-    description: 'Everything you need to scale your business with advanced automation.',
+    description: 'Everything you need to scale your business with advanced automation. Includes 3-month free trial.',
     icon: Star,
     iconColor: 'text-orange-500',
     glassColor: 'from-orange-500/15 to-orange-600/10',
     features: [
       'Unlimited invoices & customers',
-      'Advanced automation workflows',
-      'Custom branding & templates',
-      'Multi-currency support',
+      'AI-powered automation workflows',
+      'Custom branding & 25+ templates',
+      'Multi-currency support (50+ currencies)',
       'Advanced analytics dashboard',
       'Priority email support',
-      'Payment integrations',
-      'Automated reminders'
+      'Payment integrations (Stripe, PayPal)',
+      'Automated reminders & follow-ups'
     ],
     buttonText: 'Start 3-Month Free Trial',
     buttonVariant: 'default' as const,
@@ -52,9 +56,9 @@ const pricingPlans = [
   },
   {
     name: 'Enterprise',
-    price: '$49',
+    price: '$20',
     period: 'per month',
-    description: 'Advanced features and dedicated support for growing businesses.',
+    description: 'Advanced features and dedicated support for growing businesses. Includes 3-month free trial.',
     icon: Crown,
     iconColor: 'text-purple-500',
     glassColor: 'from-purple-500/10 to-purple-600/5',
@@ -64,28 +68,29 @@ const pricingPlans = [
       'Advanced team permissions',
       'API access & webhooks',
       'SSO & security features',
-      'Custom integrations',
+      'Custom integrations & white-label',
       'Dedicated account manager',
-      'White-label solutions'
+      '24/7 priority support'
     ],
-    buttonText: 'Contact Sales',
-    buttonVariant: 'outline' as const,
+    buttonText: 'Start 3-Month Free Trial',
+    buttonVariant: 'default' as const,
     buttonClass: 'bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white',
-    popular: false
+    popular: false,
+    trialBadge: true
   }
 ]
 
 export function Pricing() {
   const handlePlanClick = (plan: any) => {
-    if (plan.name === 'Professional') {
-      // Handle trial signup
-      window.location.href = '/auth/signup'
-    } else if (plan.name === 'Starter') {
-      // Handle free plan
-      window.location.href = '/auth/signup'
-    } else {
-      // Handle enterprise contact
-      window.location.href = '/contact'
+    if (plan.name === 'Free') {
+      // Handle free trial signup
+      window.location.href = '/auth/signup?plan=free&trial=true'
+    } else if (plan.name === 'Professional') {
+      // Handle professional trial signup
+      window.location.href = '/auth/signup?plan=professional&trial=true'
+    } else if (plan.name === 'Enterprise') {
+      // Handle enterprise trial signup
+      window.location.href = '/auth/signup?plan=enterprise&trial=true'
     }
   }
 

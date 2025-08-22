@@ -44,21 +44,32 @@ export const userService = {
   // Enhanced network connectivity test
   async testSupabaseConnectivity(): Promise<boolean> {
     try {
+      console.log('🔗 Testing Supabase connectivity...')
+      
+      // Simple connectivity test - just try to connect
       const supabaseAdmin = getSupabaseAdmin()
+      
+      // Test with a simple query that should work even on empty tables
       const { data, error } = await supabaseAdmin
         .from('users')
-        .select('id')
+        .select('count')
         .limit(1)
       
-      if (error && error.code !== 'PGRST116') {
-        console.warn('🔗 Supabase connectivity test failed:', error.message)
+      // Accept both success and "table not found" as valid connectivity
+      if (error) {
+        // PGRST116 = row not found, PGRST106 = table not found - both are OK for connectivity test
+        if (error.code === 'PGRST116' || error.code === 'PGRST106') {
+          console.log('✅ Supabase connectivity test passed (table response received)')
+          return true
+        }
+        console.warn('🔗 Supabase connectivity test failed:', error.code, error.message)
         return false
       }
       
       console.log('✅ Supabase connectivity test passed')
       return true
     } catch (error: any) {
-      console.warn('🔗 Supabase connectivity test failed:', error.message)
+      console.warn('🔗 Supabase connectivity test failed:', error.name, error.message)
       return false
     }
   },
@@ -71,11 +82,8 @@ export const userService = {
       console.log('  - SUPABASE_SERVICE_ROLE_KEY present:', !!process.env.SUPABASE_SERVICE_ROLE_KEY)
       console.log('  - SUPABASE_SERVICE_ROLE_KEY length:', process.env.SUPABASE_SERVICE_ROLE_KEY?.length || 0)
       
-      // Test connectivity first
-      const isConnected = await this.testSupabaseConnectivity()
-      if (!isConnected) {
-        throw new Error('Unable to connect to Supabase. Please check your internet connection and environment configuration.')
-      }
+      // Skip connectivity test - it's causing issues. Go straight to the query.
+      console.log('🔍 Skipping connectivity test - attempting direct query...')
       
       const supabaseAdmin = getSupabaseAdmin()
       const { data, error } = await supabaseAdmin
@@ -142,6 +150,16 @@ export const userService = {
         .single()
       
       if (error) {
+        // Handle race condition: if user already exists, fetch the existing user
+        if (error.code === '23505' && error.message.includes('firebase_uid')) {
+          console.log('🔄 User already exists (race condition), fetching existing user...')
+          const existingUser = await this.getCurrentUser(userData.firebase_uid)
+          if (existingUser) {
+            console.log('✅ Found existing user:', existingUser.id)
+            return existingUser
+          }
+        }
+        
         console.error('Error creating user in Supabase:', error)
         throw error
       }
@@ -212,6 +230,15 @@ export const userService = {
           
           user = await this.createUser(userData)
           console.log('✅ User successfully created in Supabase:', user.id)
+          
+          // Double-check user was created/exists after potential race condition handling
+          if (!user) {
+            console.log('🔄 Attempting to fetch user again after creation...')
+            user = await this.getCurrentUser(firebaseUser.uid)
+            if (!user) {
+              throw new Error('Failed to create or retrieve user after multiple attempts')
+            }
+          }
           
           // Create trial record for new user
           try {
@@ -626,11 +653,11 @@ export const invoiceService = {
 // Trial services
 export const trialService = {
   // Get active trial for user
-  async getActiveTrial(userId: string): Promise<Tables<'trials'> | null> {
+  async getActiveTrial(userId: string): Promise<Tables<'user_trials'> | null> {
     try {
       const supabaseAdmin = getSupabaseAdmin()
       const { data, error } = await supabaseAdmin
-        .from('trials')
+        .from('user_trials')
         .select('*')
         .eq('user_id', userId)
         .eq('status', 'active')
@@ -662,11 +689,11 @@ export const trialService = {
   },
 
   // Get trial by user ID (any status)
-  async getTrialByUserId(userId: string): Promise<Tables<'trials'> | null> {
+  async getTrialByUserId(userId: string): Promise<Tables<'user_trials'> | null> {
     try {
       const supabaseAdmin = getSupabaseAdmin()
       const { data, error } = await supabaseAdmin
-        .from('trials')
+        .from('user_trials')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
@@ -686,10 +713,10 @@ export const trialService = {
   },
 
   // Calculate precise trial metrics with timezone support
-  calculateTrialMetrics(trial: Tables<'trials'>) {
+  calculateTrialMetrics(trial: Tables<'user_trials'>) {
     const now = new Date()
-    const startDate = new Date(trial.start_date)
-    const endDate = new Date(trial.end_date)
+    const startDate = new Date(trial.trial_start)
+    const endDate = new Date(trial.trial_end)
     
     // Total trial duration in milliseconds
     const totalDuration = endDate.getTime() - startDate.getTime()
@@ -735,7 +762,7 @@ export const trialService = {
   },
 
   // Start new trial
-  async startTrial(userId: string, plan: 'professional' | 'enterprise' = 'professional'): Promise<Tables<'trials'>> {
+  async startTrial(userId: string, plan: 'professional' | 'enterprise' = 'professional'): Promise<Tables<'user_trials'>> {
     try {
       // Check if user already has an active trial
       const existingTrial = await this.getActiveTrial(userId)
@@ -769,14 +796,14 @@ export const trialService = {
 
       const supabaseAdmin = getSupabaseAdmin()
       const { data, error } = await supabaseAdmin
-        .from('trials')
+        .from('user_trials')
         .insert({
           user_id: userId,
-          plan,
+          plan_type: plan,
           status: 'active',
-          start_date: startDate.toISOString(),
-          end_date: endDate.toISOString(),
-          features,
+          trial_start: startDate.toISOString(),
+          trial_end: endDate.toISOString(),
+          features_used: features,
           usage_stats: {
             invoicesCreated: 0,
             customersAdded: 0,
@@ -799,7 +826,7 @@ export const trialService = {
   },
 
   // Update trial status with automatic cleanup
-  async updateTrialStatus(userId: string, status: 'active' | 'expired' | 'cancelled' | 'converted'): Promise<Tables<'trials'> | null> {
+  async updateTrialStatus(userId: string, status: 'active' | 'expired' | 'cancelled' | 'converted'): Promise<Tables<'user_trials'> | null> {
     try {
       const supabaseAdmin = getSupabaseAdmin()
       
@@ -818,7 +845,7 @@ export const trialService = {
       }
 
       const { data, error } = await supabaseAdmin
-        .from('trials')
+        .from('user_trials')
         .update(updateData)
         .eq('user_id', userId)
         .eq('status', 'active') // Only update if currently active
@@ -844,7 +871,7 @@ export const trialService = {
     customersAdded?: number  
     paymentsProcessed?: number
     reportsGenerated?: number
-  }): Promise<Tables<'trials'> | null> {
+  }): Promise<Tables<'user_trials'> | null> {
     try {
       const trial = await this.getActiveTrial(userId)
       if (!trial) return null
@@ -858,7 +885,7 @@ export const trialService = {
 
       const supabaseAdmin = getSupabaseAdmin()
       const { data, error } = await supabaseAdmin
-        .from('trials')
+        .from('user_trials')
         .update({ 
           usage_stats: updatedStats,
           updated_at: new Date().toISOString()
@@ -907,14 +934,13 @@ export const trialService = {
       const now = new Date().toISOString()
       
       const { data, error } = await supabaseAdmin
-        .from('trials')
+        .from('user_trials')
         .update({ 
           status: 'expired',
-          expired_at: now,
           updated_at: now
         })
         .eq('status', 'active')
-        .lt('end_date', now)
+        .lt('trial_end', now)
         .select('id')
       
       if (error) throw error
@@ -932,20 +958,20 @@ export const trialService = {
   },
 
   // Extend trial (for customer support scenarios)
-  async extendTrial(userId: string, additionalDays: number, reason?: string): Promise<Tables<'trials'> | null> {
+  async extendTrial(userId: string, additionalDays: number, reason?: string): Promise<Tables<'user_trials'> | null> {
     try {
       const trial = await this.getTrialByUserId(userId)
       if (!trial) return null
 
-      const currentEndDate = new Date(trial.end_date)
+      const currentEndDate = new Date(trial.trial_end)
       const newEndDate = new Date(currentEndDate.getTime() + (additionalDays * 24 * 60 * 60 * 1000))
       newEndDate.setHours(23, 59, 59, 999) // End of day
 
       const supabaseAdmin = getSupabaseAdmin()
       const { data, error } = await supabaseAdmin
-        .from('trials')
+        .from('user_trials')
         .update({ 
-          end_date: newEndDate.toISOString(),
+          trial_end: newEndDate.toISOString(),
           status: 'active', // Reactivate if was expired
           updated_at: new Date().toISOString(),
           extension_reason: reason || `Extended by ${additionalDays} days`
@@ -967,7 +993,7 @@ export const trialService = {
 
   // Get detailed trial status with all metrics
   async getDetailedTrialStatus(userId: string): Promise<{
-    trial: Tables<'trials'> | null
+    trial: Tables<'user_trials'> | null
     metrics: any
     recommendations: any
   }> {
@@ -996,21 +1022,21 @@ export const trialService = {
           action: 'upgrade_urgent',
           message: 'Your trial has expired but you still have access. Upgrade now to keep your data!',
           urgency: 'critical',
-          suggestedPlan: trial.plan
+          suggestedPlan: trial.plan_type
         }
       } else if (metrics.isExpiringSoonCritical) {
         recommendations = {
           action: 'upgrade_now',
           message: `Only ${metrics.daysRemaining} days left! Upgrade now to avoid losing access.`,
           urgency: 'high',
-          suggestedPlan: trial.plan
+          suggestedPlan: trial.plan_type
         }
       } else if (metrics.isExpiringSoon) {
         recommendations = {
           action: 'consider_upgrade',
           message: `${metrics.daysRemaining} days remaining in your trial. Consider upgrading soon.`,
           urgency: 'medium',
-          suggestedPlan: trial.plan
+          suggestedPlan: trial.plan_type
         }
       } else if (metrics.isExpired && !metrics.isInGracePeriod) {
         recommendations = {

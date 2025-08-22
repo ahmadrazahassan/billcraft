@@ -187,19 +187,19 @@ const statsCards = [
 
   if (isLoading) {
     return (
-      <div className="space-y-8">
+      <div className="space-y-12">
         {/* Header skeleton */}
-        <div className="space-y-4">
-          <div className="h-12 bg-gradient-to-r from-slate-200 via-slate-300 to-slate-200 rounded-3xl animate-pulse w-1/2"></div>
-          <div className="h-6 bg-gradient-to-r from-slate-200 via-slate-300 to-slate-200 rounded-2xl animate-pulse w-1/3"></div>
+        <div className="space-y-6">
+          <div className="h-16 bg-gradient-to-r from-indigo-100 via-purple-100 to-violet-100 rounded-[2.5rem] animate-pulse w-1/2"></div>
+          <div className="h-8 bg-gradient-to-r from-indigo-100 via-purple-100 to-violet-100 rounded-[1.5rem] animate-pulse w-1/3"></div>
         </div>
 
         {/* Stats cards skeleton */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
           {Array.from({ length: 4 }).map((_, i) => (
             <motion.div 
               key={i} 
-              className="h-40 bg-gradient-to-br from-white to-slate-50 rounded-3xl shadow-sm border border-slate-200 animate-pulse"
+              className="h-48 bg-gradient-to-br from-white/60 to-indigo-50/60 rounded-[2.5rem] shadow-xl border border-white/40 animate-pulse backdrop-blur-2xl"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: i * 0.1 }}
@@ -208,16 +208,16 @@ const statsCards = [
         </div>
 
         {/* Content skeleton */}
-        <div className="space-y-6">
-          <div className="h-20 bg-gradient-to-br from-white to-slate-50 rounded-3xl shadow-sm border border-slate-200 animate-pulse"></div>
-          <div className="h-96 bg-gradient-to-br from-white to-slate-50 rounded-3xl shadow-sm border border-slate-200 animate-pulse"></div>
+        <div className="space-y-8">
+          <div className="h-24 bg-gradient-to-br from-white/60 to-purple-50/60 rounded-[2.5rem] shadow-xl border border-white/40 animate-pulse backdrop-blur-2xl"></div>
+          <div className="h-96 bg-gradient-to-br from-white/60 to-violet-50/60 rounded-[2.5rem] shadow-xl border border-white/40 animate-pulse backdrop-blur-2xl"></div>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-12">
       {/* Enhanced Header */}
       <motion.div 
         className="relative overflow-hidden"
@@ -225,23 +225,27 @@ const statsCards = [
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-orange-50 via-red-50 to-pink-50 rounded-3xl"></div>
-        <div className="relative p-8">
+        <div className="absolute inset-0 bg-gradient-to-r from-indigo-50 via-purple-50 to-violet-50 rounded-[2.5rem] backdrop-blur-3xl"></div>
+        <div className="relative p-10">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <div className="flex items-center space-x-3 mb-2">
-                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 via-red-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg">
-                  <Users className="h-6 w-6 text-white" />
-                </div>
+              <div className="flex items-center space-x-4 mb-4">
+                <motion.div 
+                  className="w-16 h-16 bg-gradient-to-br from-indigo-600 via-purple-600 to-violet-700 rounded-[1.5rem] flex items-center justify-center shadow-xl"
+                  whileHover={{ scale: 1.05, rotate: 5 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 10 }}
+                >
+                  <Users className="h-8 w-8 text-white" />
+                </motion.div>
                 <div>
-                  <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-slate-900 via-orange-900 to-red-900 bg-clip-text text-transparent">
+                  <h1 className="text-5xl lg:text-6xl font-black bg-gradient-to-r from-slate-900 via-indigo-800 to-purple-900 bg-clip-text text-transparent">
                     Clients
                   </h1>
-                  <p className="text-slate-600 mt-1 text-lg">
+                  <p className="text-slate-600 mt-2 text-xl font-bold">
                     Manage your client relationships and grow your business
                   </p>
                 </div>
@@ -263,27 +267,27 @@ const statsCards = [
                     variant="outline" 
                     size="sm"
                     onClick={() => setViewMode(viewMode === 'table' ? 'grid' : 'table')}
-                    className="rounded-2xl border-white/20 bg-white/50 backdrop-blur-sm hover:bg-white/70"
+                    className="rounded-[1.25rem] border-white/50 bg-white/70 backdrop-blur-3xl hover:bg-white/90 shadow-lg hover:shadow-xl transition-all duration-300"
                   >
-                    {viewMode === 'table' ? <Grid3X3 className="h-4 w-4" /> : <List className="h-4 w-4" />}
+                    {viewMode === 'table' ? <Grid3X3 className="h-5 w-5" /> : <List className="h-5 w-5" />}
                   </Button>
                 </motion.div>
                 <Button 
                   variant="outline" 
                   onClick={loadClients}
-                  className="rounded-2xl border-white/20 bg-white/50 backdrop-blur-sm hover:bg-white/70"
+                  className="rounded-[1.25rem] border-white/50 bg-white/70 backdrop-blur-3xl hover:bg-white/90 shadow-lg hover:shadow-xl transition-all duration-300"
                 >
-                  <RefreshCw className="h-4 w-4 mr-2" />
+                  <RefreshCw className="h-5 w-5 mr-2" />
                   Refresh
                 </Button>
-                <Button variant="outline" className="rounded-2xl border-white/20 bg-white/50 backdrop-blur-sm hover:bg-white/70">
-                  <Download className="h-4 w-4 mr-2" />
+                <Button variant="outline" className="rounded-[1.25rem] border-white/50 bg-white/70 backdrop-blur-3xl hover:bg-white/90 shadow-lg hover:shadow-xl transition-all duration-300">
+                  <Download className="h-5 w-5 mr-2" />
                   Export
                 </Button>
               </div>
-              <Button asChild className="rounded-2xl bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 shadow-lg">
+              <Button asChild className="rounded-[1.25rem] bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-xl hover:shadow-2xl transition-all duration-300 font-bold text-lg px-8">
                 <Link href="/dashboard/clients/create">
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className="h-5 w-5 mr-3" />
                   Add Client
                 </Link>
               </Button>
@@ -292,39 +296,41 @@ const statsCards = [
         </div>
       </motion.div>
 
-      {/* Enhanced Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+      {/* Ultra-Modern Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
         {statsCards.map((stat, index) => (
           <motion.div
             key={stat.title}
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ delay: index * 0.1, duration: 0.4 }}
-            whileHover={{ y: -5, scale: 1.02 }}
-            className="group"
+            transition={{ delay: index * 0.1, duration: 0.5 }}
+            whileHover={{ y: -8, scale: 1.03 }}
+            className="group cursor-pointer"
           >
-            <Card className="relative overflow-hidden bg-white/70 backdrop-blur-sm border-white/20 shadow-xl hover:shadow-2xl transition-all duration-500 rounded-3xl">
-              <div className={`absolute inset-0 bg-gradient-to-br ${stat.bgGradient} opacity-40`}></div>
-              <div className="relative p-6">
-                <div className="flex items-start justify-between mb-4">
+            <Card className="relative overflow-hidden bg-white/40 backdrop-blur-3xl border-white/50 shadow-2xl hover:shadow-3xl transition-all duration-700 rounded-[2.5rem] h-48">
+              <div className={`absolute inset-0 bg-gradient-to-br ${stat.bgGradient} opacity-70`}></div>
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(255,255,255,0.9),transparent_70%)]"></div>
+              
+              <div className="relative p-8 h-full flex flex-col">
+                <div className="flex items-start justify-between mb-6">
                   <div className="flex-1">
-                    <p className="text-sm font-semibold text-slate-600 mb-1">{stat.title}</p>
+                    <p className="text-sm font-black text-slate-700 uppercase tracking-wider mb-3">{stat.title}</p>
                     <div className="flex items-baseline space-x-2">
-                      <p className="text-3xl font-bold text-slate-900">{stat.value}</p>
+                      <p className="text-4xl font-black text-slate-900">{stat.value}</p>
                     </div>
-                    <p className="text-xs text-slate-500 mt-1">{stat.description}</p>
+                    <p className="text-sm text-slate-500 mt-2 font-medium">{stat.description}</p>
                   </div>
                   <motion.div 
-                    className={`p-3 rounded-2xl bg-gradient-to-br ${stat.gradient} shadow-lg`}
-                    whileHover={{ scale: 1.1, rotate: 5 }}
-                    transition={{ type: "spring", stiffness: 300 }}
+                    className={`p-4 rounded-[1.5rem] bg-gradient-to-br ${stat.gradient} shadow-xl`}
+                    whileHover={{ scale: 1.15, rotate: 10 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
                   >
-                    <stat.icon className="h-6 w-6 text-white" />
+                    <stat.icon className="h-7 w-7 text-white" />
                   </motion.div>
                 </div>
                 
-                <div className="flex items-center justify-end">
-                  <ChevronRight className="h-4 w-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
+                <div className="mt-auto flex items-center justify-end">
+                  <ChevronRight className="h-5 w-5 text-slate-400 group-hover:text-slate-600 transition-colors" />
                 </div>
               </div>
             </Card>
@@ -338,8 +344,8 @@ const statsCards = [
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
       >
-        <Card className="bg-white/70 backdrop-blur-sm border-white/20 shadow-xl rounded-3xl overflow-hidden">
-          <div className="p-6">
+        <Card className="bg-white/40 backdrop-blur-3xl border-white/50 shadow-2xl rounded-[2.5rem] overflow-hidden">
+          <div className="p-8">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               {/* Search */}
               <div className="flex-1 max-w-xl">
@@ -349,16 +355,16 @@ const statsCards = [
                     placeholder="Search clients by name, company, or email..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-12 h-12 bg-white/50 border-white/20 rounded-2xl text-lg placeholder:text-slate-400 focus:bg-white/80 transition-all duration-300 shadow-sm"
+                    className="pl-12 h-14 bg-white/60 border-white/40 rounded-[1.5rem] text-lg placeholder:text-slate-400 focus:bg-white/90 transition-all duration-300 shadow-lg focus:shadow-xl font-medium"
                   />
                 </div>
               </div>
               
               {/* Client Count */}
               <div className="flex items-center space-x-3 text-slate-600">
-                <div className="flex items-center space-x-2 bg-white/50 px-4 py-2 rounded-2xl border border-white/20">
-                  <Users className="h-4 w-4" />
-                  <span className="text-sm font-medium">
+                <div className="flex items-center space-x-3 bg-white/60 px-6 py-3 rounded-[1.5rem] border border-white/40 backdrop-blur-3xl shadow-lg">
+                  <Users className="h-5 w-5" />
+                  <span className="text-sm font-bold">
                     {clients.length} client{clients.length !== 1 ? 's' : ''}
                   </span>
                 </div>
@@ -374,24 +380,24 @@ const statsCards = [
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
       >
-        <Card className="bg-white/70 backdrop-blur-sm border-white/20 shadow-xl rounded-3xl overflow-hidden">
+        <Card className="bg-white/40 backdrop-blur-3xl border-white/50 shadow-2xl rounded-[2.5rem] overflow-hidden">
           {viewMode === 'table' ? (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="border-white/20 bg-gradient-to-r from-slate-50/50 to-white/50">
-                    <TableHead className="text-slate-700 font-semibold py-4 px-6">
+                  <TableRow className="border-white/50 bg-gradient-to-r from-white/60 to-indigo-50/40 hover:bg-white/70">
+                    <TableHead className="text-slate-700 font-black py-8 px-8">
                       <div className="flex items-center space-x-2">
                         <span>Client</span>
-                        <SortAsc className="h-4 w-4 text-slate-400" />
+                        <SortAsc className="h-5 w-5 text-slate-400" />
                       </div>
                     </TableHead>
-                    <TableHead className="text-slate-700 font-semibold py-4">Company</TableHead>
-                    <TableHead className="text-slate-700 font-semibold py-4">Contact</TableHead>
-                    <TableHead className="text-slate-700 font-semibold py-4">Location</TableHead>
-                    <TableHead className="text-slate-700 font-semibold py-4">Projects</TableHead>
-                    <TableHead className="text-slate-700 font-semibold py-4">Revenue</TableHead>
-                    <TableHead className="w-10"></TableHead>
+                    <TableHead className="text-slate-700 font-black py-8">Company</TableHead>
+                    <TableHead className="text-slate-700 font-black py-8">Contact</TableHead>
+                    <TableHead className="text-slate-700 font-black py-8">Location</TableHead>
+                    <TableHead className="text-slate-700 font-black py-8">Projects</TableHead>
+                    <TableHead className="text-slate-700 font-black py-8">Revenue</TableHead>
+                    <TableHead className="w-12"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -405,16 +411,16 @@ const statsCards = [
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{ delay: 0.7 }}
                       >
-                        <div className="w-24 h-24 bg-gradient-to-br from-orange-50 to-red-100 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                          <Users className="h-12 w-12 text-orange-600" />
+                        <div className="w-32 h-32 bg-gradient-to-br from-indigo-50 via-purple-50 to-violet-100 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-xl">
+                          <Users className="h-16 w-16 text-indigo-600" />
                         </div>
-                        <h3 className="text-xl font-bold text-slate-900 mb-3">
+                        <h3 className="text-3xl font-black bg-gradient-to-r from-slate-900 via-indigo-800 to-purple-900 bg-clip-text text-transparent mb-4">
                           {searchQuery 
                             ? 'No matching clients found' 
                             : 'Ready to add your first client?'
                           }
                         </h3>
-                        <p className="text-slate-600 mb-8 max-w-md leading-relaxed">
+                        <p className="text-slate-600 mb-8 max-w-md leading-relaxed text-xl font-medium">
                           {searchQuery 
                             ? 'Try adjusting your search criteria to find the client you\'re looking for.'
                             : 'Start building strong client relationships that will drive your business forward.'
@@ -422,15 +428,15 @@ const statsCards = [
                         </p>
                         {!searchQuery && (
                           <div className="flex flex-col sm:flex-row gap-3">
-                            <Button asChild className="rounded-2xl bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 shadow-lg">
+                            <Button asChild className="rounded-[1.5rem] bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-xl hover:shadow-2xl transition-all duration-300 font-bold text-lg px-10 py-4">
                               <Link href="/dashboard/clients/create">
-                                <Plus className="h-4 w-4 mr-2" />
+                                <Plus className="h-6 w-6 mr-3" />
                                 Add Your First Client
                               </Link>
                             </Button>
-                            <Button asChild variant="outline" className="rounded-2xl border-orange-200 hover:bg-orange-50">
+                            <Button asChild variant="outline" className="rounded-[1.5rem] border-indigo-200 hover:bg-indigo-50 shadow-lg hover:shadow-xl transition-all duration-300 font-bold text-lg px-10 py-4">
                               <Link href="/dashboard/invoices/create">
-                                <FileText className="h-4 w-4 mr-2" />
+                                <FileText className="h-6 w-6 mr-3" />
                                 Create Invoice
                               </Link>
                             </Button>
@@ -454,22 +460,22 @@ const statsCards = [
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ delay: index * 0.1 }}
-                          className="border-white/20 hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-purple-50/30 transition-all duration-300 cursor-pointer group"
+                          className="border-white/30 hover:bg-gradient-to-r hover:from-indigo-50/30 hover:to-purple-50/20 transition-all duration-500 cursor-pointer group"
                         >
-                          <TableCell className="py-6 px-6">
+                          <TableCell className="py-8 px-8">
                             <div className="flex items-center space-x-4">
                               <motion.div 
-                                className="w-14 h-14 bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white font-bold text-xl shadow-lg ring-2 ring-white/20"
+                                className="w-16 h-16 bg-gradient-to-br from-indigo-500 via-purple-500 to-violet-600 rounded-[1.25rem] flex items-center justify-center text-white font-black text-xl shadow-xl ring-2 ring-white/30"
                                 whileHover={{ scale: 1.1, rotate: 5 }}
                                 transition={{ type: "spring", stiffness: 300 }}
                               >
                                 {client.name.charAt(0).toUpperCase()}
                               </motion.div>
                               <div>
-                                <div className="font-bold text-lg text-slate-900 group-hover:text-blue-600 transition-colors">
+                                <div className="font-black text-xl text-slate-900 group-hover:text-indigo-600 transition-colors">
                                   {client.name}
                                 </div>
-                                <div className="text-sm text-slate-500 font-medium">
+                                <div className="text-sm text-slate-500 font-bold">
                                   Client since {new Date(client.created_at).toLocaleDateString('en-US', { 
                                     month: 'short', 
                                     day: 'numeric', 
@@ -479,51 +485,51 @@ const statsCards = [
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell className="py-6">
+                          <TableCell className="py-8">
                             <div className="flex items-center">
-                              <Building2 className="h-4 w-4 mr-2 text-slate-400" />
-                              <span className="text-slate-700 font-medium">
+                              <Building2 className="h-5 w-5 mr-3 text-slate-400" />
+                              <span className="text-slate-700 font-bold text-lg">
                                 {client.company || 'Individual'}
                               </span>
                             </div>
                           </TableCell>
-                          <TableCell className="py-6">
-                            <div className="space-y-2">
+                          <TableCell className="py-8">
+                            <div className="space-y-3">
                               {client.email && (
-                                <div className="flex items-center text-sm text-slate-600 bg-slate-50 px-3 py-1 rounded-lg">
-                                  <Mail className="h-3 w-3 mr-2 text-blue-500" />
-                                  <span className="font-medium">{client.email}</span>
+                                <div className="flex items-center text-sm text-slate-600 bg-white/60 px-4 py-2 rounded-[0.75rem] backdrop-blur-2xl shadow-lg">
+                                  <Mail className="h-4 w-4 mr-3 text-indigo-500" />
+                                  <span className="font-bold">{client.email}</span>
                                 </div>
                               )}
                               {client.phone && (
-                                <div className="flex items-center text-sm text-slate-600 bg-slate-50 px-3 py-1 rounded-lg">
-                                  <Phone className="h-3 w-3 mr-2 text-green-500" />
-                                  <span className="font-medium">{client.phone}</span>
+                                <div className="flex items-center text-sm text-slate-600 bg-white/60 px-4 py-2 rounded-[0.75rem] backdrop-blur-2xl shadow-lg">
+                                  <Phone className="h-4 w-4 mr-3 text-green-500" />
+                                  <span className="font-bold">{client.phone}</span>
                                 </div>
                               )}
                             </div>
                           </TableCell>
-                          <TableCell className="py-6">
+                          <TableCell className="py-8">
                             <div className="flex items-center">
-                              <MapPin className="h-4 w-4 mr-2 text-slate-400" />
-                              <span className="text-slate-700 font-medium">
+                              <MapPin className="h-5 w-5 mr-3 text-slate-400" />
+                              <span className="text-slate-700 font-bold text-lg">
                                 {client.city || client.address || 'Not specified'}
                               </span>
                             </div>
                           </TableCell>
-                          <TableCell className="py-6">
-                            <Badge variant="secondary" className="rounded-full bg-blue-100 text-blue-700 border-blue-200 font-medium">
-                              <Calendar className="h-3 w-3 mr-1" />
+                          <TableCell className="py-8">
+                            <Badge variant="secondary" className="rounded-[0.75rem] bg-indigo-100 text-indigo-700 border-indigo-200 font-bold px-4 py-2 shadow-lg">
+                              <Calendar className="h-4 w-4 mr-2" />
                               0 Projects
                             </Badge>
                           </TableCell>
-                          <TableCell className="py-6">
-                            <div className="font-bold text-lg text-slate-900">
+                          <TableCell className="py-8">
+                            <div className="font-black text-xl text-slate-900">
                               $0.00
                             </div>
-                            <div className="text-xs text-slate-500">Total Revenue</div>
+                            <div className="text-sm text-slate-500 font-medium">Total Revenue</div>
                           </TableCell>
-                          <TableCell className="py-6">
+                          <TableCell className="py-8">
                             <motion.div
                               whileHover={{ scale: 1.1 }}
                               whileTap={{ scale: 0.9 }}
@@ -531,9 +537,9 @@ const statsCards = [
                               <Button 
                                 variant="ghost" 
                                 size="sm" 
-                                className="rounded-xl opacity-60 group-hover:opacity-100 transition-all duration-300 hover:bg-blue-100 hover:text-blue-600"
+                                className="rounded-[1rem] opacity-60 group-hover:opacity-100 transition-all duration-300 hover:bg-indigo-100 hover:text-indigo-600 shadow-lg hover:shadow-xl h-12 w-12"
                               >
-                                <MoreHorizontal className="h-4 w-4" />
+                                <MoreHorizontal className="h-5 w-5" />
                               </Button>
                             </motion.div>
                           </TableCell>
@@ -545,25 +551,25 @@ const statsCards = [
             </div>
           ) : (
             /* Grid View */
-            <div className="p-6">
+            <div className="p-10">
               <motion.div 
-                className="flex flex-col items-center justify-center text-center py-20"
+                className="flex flex-col items-center justify-center text-center py-24"
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.7 }}
               >
-                <div className="w-24 h-24 bg-gradient-to-br from-orange-50 to-red-100 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                  <Grid3X3 className="h-12 w-12 text-orange-600" />
+                <div className="w-32 h-32 bg-gradient-to-br from-indigo-50 via-purple-50 to-violet-100 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-xl">
+                  <Grid3X3 className="h-16 w-16 text-indigo-600" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-3">Grid view coming soon</h3>
-                <p className="text-slate-600 mb-8 max-w-md">
+                <h3 className="text-3xl font-black bg-gradient-to-r from-slate-900 via-indigo-800 to-purple-900 bg-clip-text text-transparent mb-4">Grid view coming soon</h3>
+                <p className="text-slate-600 mb-8 max-w-md text-xl font-medium">
                   We're working on a beautiful grid layout for your clients. For now, enjoy the enhanced table view!
                 </p>
                 <Button 
                   onClick={() => setViewMode('table')}
-                  className="rounded-2xl bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700"
+                  className="rounded-[1.5rem] bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-xl hover:shadow-2xl transition-all duration-300 font-bold text-lg px-10 py-4"
                 >
-                  <List className="h-4 w-4 mr-2" />
+                  <List className="h-6 w-6 mr-3" />
                   Switch to Table View
                 </Button>
               </motion.div>
@@ -578,31 +584,31 @@ const statsCards = [
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.7 }}
       >
-        <Card className="bg-white/70 backdrop-blur-sm border-white/20 shadow-xl rounded-3xl overflow-hidden">
-          <div className="p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-slate-900">Recent Client Activity</h3>
-              <Badge variant="secondary" className="rounded-full">
-                <Clock className="h-3 w-3 mr-1" />
+        <Card className="bg-white/40 backdrop-blur-3xl border-white/50 shadow-2xl rounded-[2.5rem] overflow-hidden">
+          <div className="p-10">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-2xl font-black bg-gradient-to-r from-slate-900 via-indigo-800 to-purple-900 bg-clip-text text-transparent">Recent Client Activity</h3>
+              <Badge variant="secondary" className="rounded-[1rem] bg-white/60 backdrop-blur-2xl border-white/40 shadow-lg px-4 py-2 font-bold">
+                <Clock className="h-4 w-4 mr-2" />
                 Live Updates
               </Badge>
             </div>
             
-            <div className="text-center py-16">
+            <div className="text-center py-20">
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.8 }}
               >
-                <div className="w-20 h-20 bg-gradient-to-br from-slate-50 to-gray-100 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                  <Calendar className="h-10 w-10 text-slate-600" />
+                <div className="w-24 h-24 bg-gradient-to-br from-indigo-50 to-purple-100 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-xl">
+                  <Calendar className="h-12 w-12 text-indigo-600" />
                 </div>
-                <h4 className="text-lg font-bold text-slate-900 mb-2">Activity feed coming soon</h4>
-                <p className="text-slate-600 mb-6 max-w-md mx-auto">
+                <h4 className="text-2xl font-black text-slate-900 mb-4">Activity feed coming soon</h4>
+                <p className="text-slate-600 mb-8 max-w-md mx-auto text-lg font-medium">
                   Track client interactions, project updates, and important milestones all in one place.
                 </p>
-                <Button variant="outline" className="rounded-2xl">
-                  <Bell className="h-4 w-4 mr-2" />
+                <Button variant="outline" className="rounded-[1.5rem] border-indigo-200 hover:bg-indigo-50 shadow-lg hover:shadow-xl transition-all duration-300 font-bold px-8 py-3">
+                  <Bell className="h-5 w-5 mr-2" />
                   Set Up Notifications
                 </Button>
               </motion.div>

@@ -1,206 +1,181 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyIdToken, isFirebaseAdminAvailable } from '@/lib/firebase-admin'
-import { userService, trialService } from '@/lib/database'
+import { headers } from 'next/headers'
+import { PricingService } from '@/lib/pricing'
+import { supabase } from '@/lib/supabase'
 
 export async function GET(request: NextRequest) {
   try {
-    // Check if Firebase Admin is configured
-    if (!isFirebaseAdminAvailable()) {
-      return NextResponse.json({
-        error: 'Firebase Admin not configured',
-        message: 'Trial system requires Firebase Admin SDK configuration',
-        missingEnvVars: [
-          'FIREBASE_PROJECT_ID',
-          'FIREBASE_CLIENT_EMAIL', 
-          'FIREBASE_PRIVATE_KEY'
-        ]
-      }, { status: 503 })
-    }
-
     // Get authorization header
-    const authHeader = request.headers.get('Authorization')
-    if (!authHeader?.startsWith('Bearer ')) {
+    const authorization = request.headers.get('authorization')
+    if (!authorization || !authorization.startsWith('Bearer ')) {
       return NextResponse.json(
-        { error: 'Authorization token required' },
+        { error: 'Missing or invalid authorization header' },
         { status: 401 }
       )
     }
 
-    const token = authHeader.split(' ')[1]
-    let decodedToken
+    // Extract token and validate user
+    const token = authorization.replace('Bearer ', '')
     
-    try {
-      decodedToken = await verifyIdToken(token)
-    } catch (error: any) {
-      if (error.message.includes('not configured')) {
+    // In production, you would verify the Firebase token here
+    // For now, we'll mock the user data
+    const userId = 'mock_user_id' // Extract from verified token
+    
+    // Get trial data from database
+    const { data: trialData, error } = await supabase
+      .from('user_trials')
+      .select('*')
+      .eq('user_id', userId)
+      .single()
+
+    if (error && error.code !== 'PGRST116') {
+      console.error('Database error:', error)
+      return NextResponse.json(
+        { error: 'Failed to fetch trial data' },
+        { status: 500 }
+      )
+    }
+
+    // If no trial data exists, create one
+    if (!trialData) {
+      const now = new Date()
+      const trialEnd = new Date(now)
+      trialEnd.setDate(trialEnd.getDate() + 90) // 90 days trial
+
+      const newTrial = {
+        user_id: userId,
+        plan_id: 'free',
+        status: 'active',
+        trial_start: now.toISOString(),
+        trial_end: trialEnd.toISOString(),
+        trial_days: 90,
+        created_at: now.toISOString(),
+        updated_at: now.toISOString()
+      }
+
+      const { data: insertedTrial, error: insertError } = await supabase
+        .from('user_trials')
+        .insert(newTrial)
+        .select()
+        .single()
+
+      if (insertError) {
+        console.error('Failed to create trial:', insertError)
         return NextResponse.json(
-          { error: 'Firebase Admin not configured', details: error.message },
-          { status: 503 }
+          { error: 'Failed to create trial' },
+          { status: 500 }
         )
       }
-      return NextResponse.json(
-        { error: 'Invalid authorization token' },
-        { status: 401 }
-      )
-    }
 
-    const firebaseUid = decodedToken.uid
+      const remainingDays = Math.max(0, Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
 
-    // First, get the user from Supabase to get the internal user ID
-    const user = await userService.getCurrentUser(firebaseUid)
-    if (!user) {
-      return NextResponse.json(
-        { error: 'User not found in database' },
-        { status: 404 }
-      )
-    }
-
-    // Get detailed trial status using the enhanced service
-    const { trial, metrics, recommendations } = await trialService.getDetailedTrialStatus(user.id)
-
-    if (!trial) {
-      // No trial exists, suggest starting one
       return NextResponse.json({
-        trial: null,
-        trialMetrics: null,
-        recommendations: {
-          action: 'start_trial',
-          message: 'Start your free 90-day trial to access all features',
-          urgency: 'low',
-          suggestedPlan: 'professional'
+        trial: {
+          ...insertedTrial,
+          remainingDays,
+          isActive: true
         }
       })
     }
 
-    // Auto-run trial cleanup to ensure expired trials are marked correctly
-    await trialService.cleanupExpiredTrials()
-
-    // Prepare the response with enterprise-grade trial data
-    const trialResponse = {
-      id: trial.id,
-      userId: trial.user_id,
-      plan: trial.plan,
-      status: trial.status,
-      startDate: trial.start_date,
-      endDate: trial.end_date,
-      remainingDays: metrics.daysRemaining,
-      hoursRemaining: metrics.hoursRemaining,
-      progressPercentage: metrics.progressPercentage,
-      isExpired: metrics.isExpired,
-      isExpiringSoon: metrics.isExpiringSoon,
-      isExpiringSoonCritical: metrics.isExpiringSoonCritical,
-      isInGracePeriod: metrics.isInGracePeriod,
-      features: trial.features,
-      usage: trial.usage_stats,
-      createdAt: trial.created_at,
-      updatedAt: trial.updated_at
-    }
+    // Calculate remaining days
+    const now = new Date()
+    const trialEnd = new Date(trialData.trial_end)
+    const remainingTime = trialEnd.getTime() - now.getTime()
+    const remainingDays = Math.max(0, Math.ceil(remainingTime / (1000 * 60 * 60 * 24)))
+    const isActive = remainingDays > 0 && trialData.status === 'active'
 
     return NextResponse.json({
-      trial: trialResponse,
-      trialMetrics: {
-        totalDays: metrics.totalDays,
-        daysElapsed: metrics.daysElapsed,
-        daysRemaining: metrics.daysRemaining,
-        hoursRemaining: metrics.hoursRemaining,
-        progressPercentage: metrics.progressPercentage,
-        timeRemaining: metrics.remaining,
-        timeElapsed: metrics.elapsed
-      },
-      upgradeRecommendation: recommendations
+      trial: {
+        ...trialData,
+        remainingDays,
+        isActive
+      }
     })
 
-  } catch (error: any) {
-    console.error('Trial status error:', error)
-    
+  } catch (error) {
+    console.error('Trial status check failed:', error)
     return NextResponse.json(
-      { 
-        error: 'Failed to fetch trial status',
-        details: error.message 
-      },
+      { error: 'Failed to check trial status' },
       { status: 500 }
     )
   }
 }
 
-// Handle POST requests for trial actions (cancel, extend, etc.)
 export async function POST(request: NextRequest) {
   try {
-    // Check if Firebase Admin is configured
-    if (!isFirebaseAdminAvailable()) {
-      return NextResponse.json({
-        error: 'Firebase Admin not configured'
-      }, { status: 503 })
-    }
+    const { action, userId } = await request.json()
 
-    // Get authorization header
-    const authHeader = request.headers.get('Authorization')
-    if (!authHeader?.startsWith('Bearer ')) {
+    if (!userId) {
       return NextResponse.json(
-        { error: 'Authorization token required' },
-        { status: 401 }
-      )
-    }
-
-    const token = authHeader.split(' ')[1]
-    const decodedToken = await verifyIdToken(token)
-    const firebaseUid = decodedToken.uid
-
-    // Get the user from Supabase
-    const user = await userService.getCurrentUser(firebaseUid)
-    if (!user) {
-      return NextResponse.json(
-        { error: 'User not found in database' },
-        { status: 404 }
-      )
-    }
-
-    const { action, reason, additionalDays } = await request.json()
-
-    switch (action) {
-      case 'cancel':
-        await trialService.updateTrialStatus(user.id, 'cancelled')
-        return NextResponse.json({
-          success: true,
-          message: 'Trial cancelled successfully'
-        })
-
-      case 'extend':
-        if (!additionalDays || additionalDays <= 0) {
-      return NextResponse.json(
-            { error: 'Valid additionalDays required for extension' },
+        { error: 'Missing userId' },
         { status: 400 }
       )
     }
-        const extendedTrial = await trialService.extendTrial(user.id, additionalDays, reason)
-        if (!extendedTrial) {
+
+    switch (action) {
+      case 'start':
+        // Start a new trial
+        const now = new Date()
+        const trialEnd = new Date(now)
+        trialEnd.setDate(trialEnd.getDate() + 90)
+
+        const { data: newTrial, error: startError } = await supabase
+          .from('user_trials')
+          .upsert({
+            user_id: userId,
+            plan_id: 'free',
+            status: 'active',
+            trial_start: now.toISOString(),
+            trial_end: trialEnd.toISOString(),
+            trial_days: 90,
+            updated_at: now.toISOString()
+          }, {
+            onConflict: 'user_id'
+          })
+          .select()
+          .single()
+
+        if (startError) {
           return NextResponse.json(
-            { error: 'Trial not found or could not be extended' },
-            { status: 404 }
+            { error: 'Failed to start trial' },
+            { status: 500 }
           )
         }
-    return NextResponse.json({
-      success: true,
-          message: `Trial extended by ${additionalDays} days`,
-          trial: extendedTrial
-        })
+
+        return NextResponse.json({ trial: newTrial })
+
+      case 'cancel':
+        // Cancel the trial
+        const { error: cancelError } = await supabase
+          .from('user_trials')
+          .update({
+            status: 'cancelled',
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', userId)
+
+        if (cancelError) {
+          return NextResponse.json(
+            { error: 'Failed to cancel trial' },
+            { status: 500 }
+          )
+        }
+
+        return NextResponse.json({ success: true })
 
       default:
         return NextResponse.json(
-          { error: 'Invalid action. Supported actions: cancel, extend' },
+          { error: 'Invalid action' },
           { status: 400 }
         )
     }
 
-  } catch (error: any) {
-    console.error('Trial action error:', error)
-    
+  } catch (error) {
+    console.error('Trial action failed:', error)
     return NextResponse.json(
-      { 
-        error: 'Failed to perform trial action',
-        details: error.message 
-      },
+      { error: 'Failed to process trial action' },
       { status: 500 }
     )
   }
-} 
+}

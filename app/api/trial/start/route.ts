@@ -66,10 +66,10 @@ export async function POST(request: NextRequest) {
           error: 'User already has an active trial',
           trial: {
             id: existingTrial.id,
-            plan: existingTrial.plan,
+            plan: existingTrial.plan_type,
             status: existingTrial.status,
-            startDate: existingTrial.start_date,
-            endDate: existingTrial.end_date,
+            startDate: existingTrial.trial_start,
+            endDate: existingTrial.trial_end,
             daysRemaining: metrics.daysRemaining
           }
         }, { status: 409 })
@@ -94,11 +94,11 @@ export async function POST(request: NextRequest) {
       trial: {
         id: trial.id,
         userId: trial.user_id,
-        plan: trial.plan,
+        plan: trial.plan_type,
         status: trial.status,
-        startDate: trial.start_date,
-        endDate: trial.end_date,
-        features: trial.features,
+        startDate: trial.trial_start,
+        endDate: trial.trial_end,
+        features: trial.features_used,
         usage: trial.usage_stats,
         daysRemaining: metrics.daysRemaining,
         totalDays: metrics.totalDays,
@@ -165,7 +165,7 @@ export async function GET(request: NextRequest) {
         const metrics = trialService.calculateTrialMetrics(activeTriaL)
         if (!metrics.isExpired) {
           eligibilityStatus = 'active_trial'
-          message = `User already has an active ${activeTriaL.plan} trial with ${metrics.daysRemaining} days remaining`
+          message = `User already has an active ${activeTriaL.plan_type} trial with ${metrics.daysRemaining} days remaining`
         } else {
           eligibilityStatus = 'trial_used'
           message = 'User has already used their free trial'
@@ -183,10 +183,10 @@ export async function GET(request: NextRequest) {
       trialDuration: '90 days',
       message: message,
       existingTrial: existingTrial ? {
-        plan: existingTrial.plan,
+        plan: existingTrial.plan_type,
         status: existingTrial.status,
-        startDate: existingTrial.start_date,
-        endDate: existingTrial.end_date
+        startDate: existingTrial.trial_start,
+        endDate: existingTrial.trial_end
       } : null
     })
 
