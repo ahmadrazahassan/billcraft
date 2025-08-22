@@ -24,7 +24,8 @@ import {
   Mail,
   Phone,
   Building2,
-  Rocket
+  Rocket,
+  Loader2
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -32,28 +33,9 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useAuth } from '@/contexts/auth-context'
+import { useToast } from '@/hooks/use-toast'
 
 const plans = [
-  {
-    name: 'Free Trial',
-    price: '$0',
-    period: '3 months',
-    description: 'Perfect for getting started - All Professional features included',
-    features: [
-      'All Professional features included',
-      'Unlimited invoices & clients',
-      'AI-powered automation',
-      '25+ Beautiful templates',
-      'Payment integrations',
-      'Team collaboration (up to 5 users)',
-      'Priority email support',
-      'No credit card required'
-    ],
-    gradient: 'from-emerald-500 to-teal-600',
-    bgGradient: 'from-emerald-50 to-teal-50',
-    icon: Gift,
-    popular: false
-  },
   {
     name: 'Professional',
     price: '$10',
@@ -104,12 +86,27 @@ const plans = [
 
 export default function BillingPage() {
   const { user } = useAuth()
+  const { success, error } = useToast()
   const [isLoading, setIsLoading] = useState(true)
   const [currentPlan, setCurrentPlan] = useState('trial')
   const [trialDaysLeft, setTrialDaysLeft] = useState(0)
   const [trialData, setTrialData] = useState<any>(null)
+  const [upgradeLoading, setUpgradeLoading] = useState<string | null>(null)
+  const [usageStats, setUsageStats] = useState({ invoices: 0, clients: 0 })
+  const [billingInterval, setBillingInterval] = useState<'monthly' | 'yearly'>('monthly')
 
   useEffect(() => {
+    // Check for upgrade success message
+    const urlParams = new URLSearchParams(window.location.search)
+    if (urlParams.get('upgraded') === 'true') {
+      success({ 
+        title: 'Upgrade Successful!', 
+        description: 'Welcome to your new plan! All features are now unlocked.' 
+      })
+      // Clean up URL
+      window.history.replaceState({}, '', '/dashboard/billing')
+    }
+
     const fetchTrialStatus = async () => {
       if (!user) return
       
@@ -125,8 +122,16 @@ export default function BillingPage() {
         if (response.ok) {
           const data = await response.json()
           setTrialData(data.trial)
-          setTrialDaysLeft(data.trial.remainingDays)
-          setCurrentPlan(data.trial.status === 'active' ? 'trial' : 'expired')
+          setTrialDaysLeft(data.trial?.remainingDays || 0)
+          setCurrentPlan(data.trial?.status === 'active' ? 'trial' : 'expired')
+          
+          // Extract usage stats if available
+          if (data.trial?.usage_stats) {
+            setUsageStats({
+              invoices: data.trial.usage_stats.invoicesCreated || 0,
+              clients: data.trial.usage_stats.customersAdded || 0
+            })
+          }
         } else {
           // Fallback: calculate based on user creation date
           const accountCreationDate = new Date(user.metadata.creationTime || Date.now())
@@ -166,6 +171,80 @@ export default function BillingPage() {
       setIsLoading(false)
     }
   }, [user])
+
+  // Handle upgrade button clicks
+  const handleUpgrade = async (planType: string) => {
+    if (!user) {
+      error({ title: 'Authentication required', description: 'Please log in to upgrade your plan.' })
+      return
+    }
+
+    setUpgradeLoading(planType)
+    try {
+      const token = await user.getIdToken()
+      const response = await fetch('/api/checkout/create-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          planId: planType,
+          interval: billingInterval,
+          userId: user.uid,
+          returnUrl: `${window.location.origin}/dashboard/billing?upgraded=true`
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.url) {
+          window.location.href = data.url
+        } else {
+          error({ title: 'Upgrade failed', description: 'Unable to create checkout session.' })
+        }
+      } else {
+        error({ title: 'Upgrade failed', description: 'Failed to initiate upgrade process.' })
+      }
+    } catch (err) {
+      console.error('Upgrade error:', err)
+      error({ title: 'Upgrade failed', description: 'An unexpected error occurred.' })
+    } finally {
+      setUpgradeLoading(null)
+    }
+  }
+
+  // Handle plan selection
+  const handlePlanSelection = async (planName: string) => {
+    if (!user) {
+      error({ title: 'Authentication required', description: 'Please log in to select a plan.' })
+      return
+    }
+
+    // Convert plan name to plan ID
+    const planId = planName === 'professional' ? 'professional' : 'enterprise'
+    
+    if (planName === 'enterprise') {
+      // For enterprise, redirect to contact page
+      window.location.href = `/contact?plan=enterprise&userId=${user.uid}`
+      return
+    }
+
+    await handleUpgrade(planId)
+  }
+
+  // Handle add payment method
+  const handleAddPaymentMethod = async () => {
+    if (!user) {
+      error({ title: 'Authentication required', description: 'Please log in to add payment method.' })
+      return
+    }
+    
+    success({ 
+      title: 'Coming Soon', 
+      description: 'Payment method management will be available after you upgrade to a paid plan.' 
+    })
+  }
 
   if (isLoading) {
     return (
@@ -231,8 +310,16 @@ export default function BillingPage() {
                 <Clock className="h-4 w-4 mr-2" />
                 {trialDaysLeft} days left in trial
               </Badge>
-              <Button className="rounded-2xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 shadow-lg">
-                <ArrowUpRight className="h-4 w-4 mr-2" />
+              <Button 
+                onClick={() => handleUpgrade('professional')}
+                disabled={upgradeLoading === 'professional'}
+                className="rounded-2xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 shadow-lg"
+              >
+                {upgradeLoading === 'professional' ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <ArrowUpRight className="h-4 w-4 mr-2" />
+                )}
                 Upgrade Now
               </Button>
             </motion.div>
@@ -268,13 +355,13 @@ export default function BillingPage() {
                   
                   <div className="text-center p-8 rounded-[1.5rem] bg-gradient-to-br from-indigo-50 to-purple-50 border border-indigo-200 shadow-lg hover:shadow-xl transition-all duration-300">
                     <FileText className="h-10 w-10 text-indigo-600 mx-auto mb-4" />
-                    <p className="text-3xl font-black text-indigo-900">0</p>
+                    <p className="text-3xl font-black text-indigo-900">{usageStats.invoices}</p>
                     <p className="text-sm text-indigo-700 font-bold">Invoices Created</p>
                   </div>
                   
                   <div className="text-center p-8 rounded-[1.5rem] bg-gradient-to-br from-purple-50 to-violet-50 border border-purple-200 shadow-lg hover:shadow-xl transition-all duration-300">
                     <Users className="h-10 w-10 text-purple-600 mx-auto mb-4" />
-                    <p className="text-3xl font-black text-purple-900">0</p>
+                    <p className="text-3xl font-black text-purple-900">{usageStats.clients}</p>
                     <p className="text-sm text-purple-700 font-bold">Active Clients</p>
                   </div>
                 </div>
@@ -293,8 +380,16 @@ export default function BillingPage() {
                       <p className="text-sm text-orange-700 mb-6 font-medium leading-relaxed">
                         Your free trial will end in {trialDaysLeft} days. Upgrade to continue using all features without interruption.
                       </p>
-                      <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-[1rem] shadow-xl hover:shadow-2xl transition-all duration-300 font-bold px-6 py-3">
-                        <Crown className="h-5 w-5 mr-2" />
+                      <Button 
+                        onClick={() => handleUpgrade('professional')}
+                        disabled={upgradeLoading === 'professional'}
+                        className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-[1rem] shadow-xl hover:shadow-2xl transition-all duration-300 font-bold px-6 py-3"
+                      >
+                        {upgradeLoading === 'professional' ? (
+                          <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                        ) : (
+                          <Crown className="h-5 w-5 mr-2" />
+                        )}
                         Upgrade to Professional
                       </Button>
                     </div>
@@ -314,8 +409,43 @@ export default function BillingPage() {
               <div className="p-10">
                 <h3 className="text-3xl font-black bg-gradient-to-r from-slate-900 via-indigo-800 to-purple-900 bg-clip-text text-transparent mb-8">Available Plans</h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                  {plans.map((plan, index) => (
+                {/* Billing Interval Toggle */}
+                <div className="flex justify-center mb-8">
+                  <div className="inline-flex items-center bg-white/60 backdrop-blur-2xl rounded-[1.5rem] p-2 shadow-xl border border-white/50">
+                    <button
+                      onClick={() => setBillingInterval('monthly')}
+                      className={`px-6 py-3 rounded-[1rem] font-bold text-sm transition-all duration-300 ${
+                        billingInterval === 'monthly'
+                          ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      Monthly
+                    </button>
+                    <button
+                      onClick={() => setBillingInterval('yearly')}
+                      className={`px-6 py-3 rounded-[1rem] font-bold text-sm transition-all duration-300 relative ${
+                        billingInterval === 'yearly'
+                          ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      Yearly
+                      <span className="absolute -top-2 -right-1 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                        Save 20%
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {plans.map((plan, index) => {
+                    const monthlyPrice = plan.name === 'Professional' ? 10 : 20
+                    const yearlyPrice = plan.name === 'Professional' ? 96 : 192 // 20% discount
+                    const displayPrice = billingInterval === 'yearly' ? `$${yearlyPrice}` : plan.price
+                    const displayPeriod = billingInterval === 'yearly' ? 'year' : plan.period
+                    
+                    return (
                     <motion.div
                       key={plan.name}
                       initial={{ opacity: 0, y: 20 }}
@@ -346,9 +476,14 @@ export default function BillingPage() {
                         </motion.div>
                         <h4 className="text-2xl font-black text-slate-900 mb-3">{plan.name}</h4>
                         <div className="flex items-baseline justify-center space-x-1">
-                          <span className="text-4xl font-black text-slate-900">{plan.price}</span>
-                          <span className="text-slate-600 font-medium">/{plan.period}</span>
+                          <span className="text-4xl font-black text-slate-900">{displayPrice}</span>
+                          <span className="text-slate-600 font-medium">/{displayPeriod}</span>
                         </div>
+                        {billingInterval === 'yearly' && (
+                          <p className="text-sm text-green-600 font-bold mt-2">
+                            Save ${plan.name === 'Professional' ? '24' : '48'} per year
+                          </p>
+                        )}
                         <p className="text-sm text-slate-600 mt-3 font-medium">{plan.description}</p>
                       </div>
                       
@@ -362,6 +497,8 @@ export default function BillingPage() {
                       </ul>
                       
                       <Button 
+                        onClick={() => handlePlanSelection(plan.name.toLowerCase())}
+                        disabled={upgradeLoading === plan.name.toLowerCase()}
                         className={`w-full rounded-[1.5rem] py-4 font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 ${
                           plan.popular 
                             ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white' 
@@ -369,10 +506,14 @@ export default function BillingPage() {
                         }`}
                         variant={plan.popular ? 'default' : 'outline'}
                       >
-                        {currentPlan === 'trial' && plan.name === 'Free Trial' ? 'Current Plan' : 'Choose Plan'}
+                        {upgradeLoading === plan.name.toLowerCase() ? (
+                          <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                        ) : null}
+                        Choose Plan
                       </Button>
                     </motion.div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             </Card>
@@ -429,7 +570,10 @@ export default function BillingPage() {
                   </div>
                 </div>
                 
-                <Button className="w-full mt-8 rounded-[1.5rem] bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-xl hover:shadow-2xl transition-all duration-300 font-bold py-3">
+                <Button 
+                  onClick={handleAddPaymentMethod}
+                  className="w-full mt-8 rounded-[1.5rem] bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-xl hover:shadow-2xl transition-all duration-300 font-bold py-3"
+                >
                   <CreditCard className="h-5 w-5 mr-2" />
                   Add Payment Method
                 </Button>
