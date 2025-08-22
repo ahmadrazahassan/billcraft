@@ -26,6 +26,19 @@ export function Header() {
     }
   }
 
+  const handleTrialButtonClick = () => {
+    if (loading || !mounted) return
+
+    if (user) {
+      // User is already logged in, redirect to dashboard
+      router.push('/dashboard')
+      return
+    } else {
+      // User not logged in, start trial signup
+      router.push('/auth/signup?plan=professional&trial=true')
+    }
+  }
+
   const handleLogout = async () => {
     try {
       await logout()
@@ -154,13 +167,13 @@ export function Header() {
               >
                 Sign In
               </Button>
-                <Button 
+                                <Button 
                   className="px-4 py-1.5 font-medium group bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white border-0 rounded-full shadow-md transition-all duration-300 text-sm"
-                  onClick={() => handleAuthButtonClick('/auth/signup')}
+                  onClick={handleTrialButtonClick}
                 >
                   Get Free Trial
                   <ArrowRight className="ml-1.5 h-3.5 w-3.5 group-hover:translate-x-1 transition-transform duration-200" />
-              </Button>
+                </Button>
               </>
             )}
           </div>
@@ -281,7 +294,7 @@ export function Header() {
                       className="w-full font-medium group bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white border-0 rounded-full shadow-md py-2 text-sm"
                       onClick={() => {
                         setIsMenuOpen(false)
-                        handleAuthButtonClick('/auth/signup')
+                        handleTrialButtonClick()
                       }}
                     >
                       Get Free Trial

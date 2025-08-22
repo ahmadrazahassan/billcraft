@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { Check, Star, Zap, Crown, Sparkles } from 'lucide-react'
@@ -8,7 +9,8 @@ import Link from 'next/link'
 const pricingPlans = [
   {
     name: 'Free',
-    price: '$0',
+    monthlyPrice: 0,
+    yearlyPrice: 0,
     period: 'for 3 months',
     description: 'Perfect for freelancers just getting started. Try all professional features completely free for 3 months.',
     icon: Zap,
@@ -32,7 +34,8 @@ const pricingPlans = [
   },
   {
     name: 'Professional',
-    price: '$10',
+    monthlyPrice: 10,
+    yearlyPrice: 8, // 20% discount for yearly
     period: 'per month',
     description: 'Everything you need to scale your business with advanced automation. Includes 3-month free trial.',
     icon: Star,
@@ -56,7 +59,8 @@ const pricingPlans = [
   },
   {
     name: 'Enterprise',
-    price: '$20',
+    monthlyPrice: 20,
+    yearlyPrice: 16, // 20% discount for yearly
     period: 'per month',
     description: 'Advanced features and dedicated support for growing businesses. Includes 3-month free trial.',
     icon: Crown,
@@ -81,6 +85,8 @@ const pricingPlans = [
 ]
 
 export function Pricing() {
+  const [isYearly, setIsYearly] = useState(false)
+
   const handlePlanClick = (plan: any) => {
     if (plan.name === 'Free') {
       // Handle free trial signup
@@ -110,13 +116,47 @@ export function Pricing() {
             transition={{ duration: 0.6 }}
             className="text-center mb-20"
           >
-
             <h2 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
               Choose Your
               <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-purple-600">Perfect Plan</span>
             </h2>
-
+            
+            {/* Billing Toggle */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="flex items-center justify-center mt-8 mb-8"
+            >
+              <div className="relative bg-white/40 backdrop-blur-xl border border-white/30 rounded-full p-1 shadow-lg">
+                <div className="flex items-center">
+                  <button
+                    onClick={() => setIsYearly(false)}
+                    className={`relative px-6 py-3 rounded-full font-semibold text-sm transition-all duration-300 ${
+                      !isYearly 
+                        ? 'text-white bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg' 
+                        : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                  >
+                    Monthly
+                  </button>
+                  <button
+                    onClick={() => setIsYearly(true)}
+                    className={`relative px-6 py-3 rounded-full font-semibold text-sm transition-all duration-300 ${
+                      isYearly 
+                        ? 'text-white bg-gradient-to-r from-orange-500 to-orange-600 shadow-lg' 
+                        : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                  >
+                    <span>Yearly</span>
+                    <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800">
+                      Save 20%
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </motion.div>
           </motion.div>
 
           {/* Pricing Cards */}
@@ -176,12 +216,35 @@ export function Pricing() {
                     {plan.name}
                   </h3>
                   <div className="mb-4">
-                      <span className="text-5xl font-bold text-gray-900">
-                      {plan.price}
-                    </span>
-                      <span className="text-gray-600 ml-2 text-lg">
-                        /{plan.period}
-                    </span>
+                    {plan.name === 'Free' ? (
+                      <>
+                        <span className="text-5xl font-bold text-gray-900">
+                          $0
+                        </span>
+                        <span className="text-gray-600 ml-2 text-lg">
+                          /{plan.period}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-5xl font-bold text-gray-900">
+                          ${isYearly ? plan.yearlyPrice : plan.monthlyPrice}
+                        </span>
+                        <span className="text-gray-600 ml-2 text-lg">
+                          /month{isYearly ? ' (billed yearly)' : ''}
+                        </span>
+                        {isYearly && plan.monthlyPrice > plan.yearlyPrice && (
+                          <div className="mt-2">
+                            <span className="text-sm text-gray-500 line-through">
+                              ${plan.monthlyPrice}/month
+                            </span>
+                            <span className="ml-2 text-sm font-semibold text-green-600">
+                              Save ${(plan.monthlyPrice - plan.yearlyPrice) * 12}/year
+                            </span>
+                          </div>
+                        )}
+                      </>
+                    )}
                   </div>
                     <p className="text-gray-700 leading-relaxed">
                     {plan.description}
