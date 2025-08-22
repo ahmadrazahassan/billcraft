@@ -95,7 +95,7 @@ export function TemplatePreviewModal({ isOpen, onClose, template }: TemplatePrev
   const [copied, setCopied] = useState(false)
   const { user } = useAuth()
   const router = useRouter()
-  const { toast } = useToast()
+  const { toast, success, error, info } = useToast()
 
   const TemplateComponent = templateComponents[template.id as keyof typeof templateComponents]
   const sampleData = generateSampleData(template.id)
@@ -219,7 +219,7 @@ export function TemplatePreviewModal({ isOpen, onClose, template }: TemplatePrev
       // Download the PDF with exact template styling
       pdf.save(`${template.name.replace(/\s+/g, '-').toLowerCase()}-template.pdf`)
 
-      toast({
+      success({
         title: "Perfect PDF Downloaded!",
         description: `${template.name} template with exact styling has been downloaded.`,
       })

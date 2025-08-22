@@ -155,7 +155,7 @@ export default function CreateInvoicePage(): JSX.Element {
   const { user } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { toast } = useToast()
+  const { toast, success, error, info } = useToast()
 
   // Template component
   const TemplateComponent = templateComponents[selectedTemplate as keyof typeof templateComponents]
@@ -188,8 +188,8 @@ export default function CreateInvoicePage(): JSX.Element {
           
           localStorage.removeItem('ai_generated_invoice') // Clean up
           
-          toast({
-            title: "AI Invoice Loaded! ✨",
+          success({
+            title: "AI Invoice Loaded!",
             description: "Your AI-generated invoice is ready for customization.",
             duration: 5000,
           })
@@ -353,8 +353,8 @@ export default function CreateInvoicePage(): JSX.Element {
           }
 
           // Show success message for form auto-fill
-          toast({
-            title: "Form Auto-Filled! ✨",
+          success({
+            title: "Form Auto-Filled!",
             description: "I've extracted the information and filled the relevant fields for you.",
             duration: 4000,
           })
@@ -598,8 +598,8 @@ export default function CreateInvoicePage(): JSX.Element {
       const filename = `${invoiceData.company.name || 'Invoice'}-${invoiceData.invoiceNumber || 'Draft'}.pdf`.replace(/[^a-zA-Z0-9-_]/g, '_')
       pdf.save(filename)
 
-      toast({
-        title: "Professional PDF Downloaded! ✨",
+      success({
+        title: "Professional PDF Downloaded!",
         description: "High-quality invoice PDF has been generated with perfect formatting.",
       })
     } catch (error) {

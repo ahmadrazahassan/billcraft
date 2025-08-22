@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { motion } from 'framer-motion'
 import { useSearchParams } from 'next/navigation'
 import { Header } from '@/components/landing/header'
@@ -45,9 +45,29 @@ interface ContactForm {
   interval: string
 }
 
-export default function ContactPage() {
+// Loading component for Suspense fallback
+function ContactPageLoading() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+      <Header />
+      <div className="pt-32 pb-20">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <div className="text-center mb-16">
+            <div className="w-32 h-8 bg-slate-200 rounded-full mx-auto mb-6 animate-pulse" />
+            <div className="w-96 h-12 bg-slate-200 rounded-lg mx-auto mb-6 animate-pulse" />
+            <div className="w-80 h-6 bg-slate-200 rounded-lg mx-auto animate-pulse" />
+          </div>
+        </div>
+      </div>
+      <Footer />
+    </div>
+  )
+}
+
+// Main contact component that uses search params
+function ContactPageContent() {
   const searchParams = useSearchParams()
-  const { toast } = useToast()
+  const { success, error: showError } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   
@@ -97,7 +117,7 @@ export default function ContactPage() {
 
       if (response.ok) {
         setSubmitted(true)
-        toast({
+        success({
           title: "Message sent successfully!",
           description: "Our team will get back to you within 24 hours.",
         })
@@ -106,10 +126,9 @@ export default function ContactPage() {
       }
     } catch (error) {
       console.error('Contact form submission failed:', error)
-      toast({
+      showError({
         title: "Failed to send message",
         description: "Please try again or email us directly at enterprise@billcraft.com",
-        variant: "destructive",
       })
     } finally {
     setIsSubmitting(false)
@@ -472,5 +491,14 @@ export default function ContactPage() {
 
       <Footer />
     </div>
+  )
+}
+
+// Default export with Suspense boundary
+export default function ContactPage() {
+  return (
+    <Suspense fallback={<ContactPageLoading />}>
+      <ContactPageContent />
+    </Suspense>
   )
 } 

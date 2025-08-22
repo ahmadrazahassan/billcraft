@@ -42,7 +42,7 @@ import { saveUserSettings, getUserSettings } from '@/lib/settings'
 
 export default function SettingsPage() {
   const { user, updateUserProfile } = useAuth()
-  const { toast } = useToast()
+  const { success, error: showError } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [activeTab, setActiveTab] = useState('profile')
@@ -149,16 +149,15 @@ export default function SettingsPage() {
       }
       
       setHasChanges(false)
-      toast({
-        title: "✅ Settings saved successfully!",
+      success({
+        title: "Settings saved successfully!",
         description: "All your settings have been synchronized to the cloud.",
       })
     } catch (error) {
       console.error('Error saving settings:', error)
-      toast({
-        title: "❌ Save failed",
+      showError({
+        title: "Save failed",
         description: "Failed to save settings. Please try again.",
-        variant: "destructive",
       })
     } finally {
       setIsSaving(false)
@@ -182,15 +181,14 @@ export default function SettingsPage() {
       
       await saveUserSettings(user.uid, allSettings)
       
-      toast({
+      success({
         title: `${tabName.charAt(0).toUpperCase() + tabName.slice(1)} updated`,
         description: "Changes saved successfully.",
       })
     } catch (error) {
-      toast({
+      showError({
         title: "Error",
         description: "Failed to save changes. Please try again.",
-        variant: "destructive",
       })
     } finally {
       setIsLoading(false)

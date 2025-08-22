@@ -132,7 +132,7 @@ export default function LoginPage() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const { user, loading, login, signInWithGoogle } = useAuth()
-  const { toast } = useToast()
+  const { success, error } = useToast()
   const router = useRouter()
 
   const { register, handleSubmit, formState: { errors }, watch } = useForm<LoginForm>({
@@ -191,16 +191,15 @@ export default function LoginPage() {
     setIsLoading(true)
     try {
       await login(data.email, data.password)
-      toast({
+      success({
         title: "Welcome back!",
         description: "You have been signed in successfully.",
       })
       router.replace('/dashboard')
     } catch (error: any) {
-      toast({
+      error({
         title: "Error signing in",
         description: error.message || "Invalid email or password.",
-        variant: "destructive",
       })
     } finally {
       setIsLoading(false)
@@ -211,16 +210,15 @@ export default function LoginPage() {
     setIsGoogleLoading(true)
     try {
       await signInWithGoogle()
-      toast({
+      success({
         title: "Welcome back!",
         description: "You have been signed in with Google successfully.",
       })
       router.replace('/dashboard')
     } catch (error: any) {
-      toast({
+      error({
         title: "Error signing in with Google",
         description: error.message || "Failed to sign in with Google.",
-        variant: "destructive",
       })
     } finally {
       setIsGoogleLoading(false)

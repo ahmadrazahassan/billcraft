@@ -49,7 +49,7 @@ interface DashboardStats {
 
 export default function DashboardPage() {
   const { user } = useAuth()
-  const { toast } = useToast()
+  const { success, error: showError } = useToast()
   const [stats, setStats] = useState<DashboardStats>({
     totalRevenue: 0,
     totalInvoices: 0,
@@ -164,10 +164,9 @@ export default function DashboardPage() {
     } catch (error) {
       console.error('❌ Error loading dashboard:', error)
       setSyncStatus('needs-sync')
-      toast({
+      showError({
         title: "Error Loading Dashboard",
         description: "Could not load your dashboard data. Please try syncing your account.",
-        variant: "destructive"
       })
     } finally {
       setLoading(false)
@@ -201,8 +200,8 @@ export default function DashboardPage() {
         setSupabaseUser(result.user)
         setSyncStatus('synced')
         
-        toast({
-          title: "✅ Account Synced!",
+        success({
+          title: "Account Synced!",
           description: "Your account has been successfully synced.",
         })
 
@@ -215,10 +214,9 @@ export default function DashboardPage() {
       console.error('❌ Manual sync failed:', error)
       setSyncStatus('needs-sync')
       
-      toast({
+      showError({
         title: "Sync Failed",
         description: error.message || "Could not sync your account. Please try again.",
-        variant: "destructive"
       })
     } finally {
       setIsSyncing(false)

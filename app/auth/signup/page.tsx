@@ -142,7 +142,7 @@ export default function SignupPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   
   const { user, loading, signup, signInWithGoogle } = useAuth()
-  const { toast } = useToast()
+  const { success, error } = useToast()
   const router = useRouter()
 
   const { register, handleSubmit, formState: { errors }, watch } = useForm<SignupForm>({
@@ -198,16 +198,15 @@ export default function SignupPage() {
     setIsLoading(true)
     try {
       await signup(data.email, data.password, data.name)
-      toast({
-        title: "🎉 Welcome to BillCraft!",
+      success({
+        title: "Welcome to BillCraft!",
         description: "Your account has been created successfully. Let's get started!",
       })
       router.replace('/dashboard')
     } catch (error: any) {
-      toast({
+      error({
         title: "Account creation failed",
         description: error.message || "Something went wrong. Please try again.",
-        variant: "destructive",
       })
     } finally {
       setIsLoading(false)
@@ -218,16 +217,15 @@ export default function SignupPage() {
     setIsGoogleLoading(true)
     try {
       await signInWithGoogle()
-      toast({
-        title: "🎉 Welcome to BillCraft!",
+      success({
+        title: "Welcome to BillCraft!",
         description: "Your account has been created successfully with Google.",
       })
       router.replace('/dashboard')
     } catch (error: any) {
-      toast({
+      error({
         title: "Google sign-in failed",
         description: error.message || "Something went wrong. Please try again.",
-        variant: "destructive",
       })
     } finally {
       setIsGoogleLoading(false)
