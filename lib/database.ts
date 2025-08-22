@@ -191,7 +191,7 @@ export const userService = {
     }
   },
 
-  // Sync user with Supabase (create if doesn't exist) - with retry logic
+  // Sync user with Supabase (create if doesn't exist) - with retry logic and race condition protection
   async syncUser(firebaseUser: any): Promise<Tables<'users'>> {
     console.log('🔍 DATABASE: Starting syncUser function')
     console.log('🔍 DATABASE: Environment check in syncUser:')
@@ -200,6 +200,29 @@ export const userService = {
     console.log('  - SUPABASE_SERVICE_ROLE_KEY first 20 chars:', process.env.SUPABASE_SERVICE_ROLE_KEY?.substring(0, 20) || 'NOT SET')
     
     const maxRetries = 3
+    let lastError: any
+    
+    // Create a unique key for this sync operation to prevent concurrent syncs for the same user
+    const syncKey = `sync_${firebaseUser.uid}`
+    if ((globalThis as any)[syncKey]) {
+      console.log('🔄 Sync already in progress for this user, waiting...')
+      return (globalThis as any)[syncKey]
+    }
+    
+    // Set sync in progress flag
+    const syncPromise = this._performSync(firebaseUser, maxRetries)
+    ;(globalThis as any)[syncKey] = syncPromise
+    
+    try {
+      const result = await syncPromise
+      return result
+    } finally {
+      // Clear the sync flag
+      delete (globalThis as any)[syncKey]
+    }
+  },
+
+  async _performSync(firebaseUser: any, maxRetries: number): Promise<Tables<'users'>> {
     let lastError: any
     
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -211,44 +234,54 @@ export const userService = {
         })
         
         // Check if user already exists
-      let user = await this.getCurrentUser(firebaseUser.uid)
-      
-      if (!user) {
+        let user = await this.getCurrentUser(firebaseUser.uid)
+        
+        if (!user) {
           console.log('User does not exist in Supabase, creating new user...')
           
-        // Create new user
-        const trialEndDate = new Date()
-        trialEndDate.setMonth(trialEndDate.getMonth() + 3) // 3 months trial
-        
+          // Create new user with atomic operation
+          const trialEndDate = new Date()
+          trialEndDate.setMonth(trialEndDate.getMonth() + 3) // 3 months trial
+          
           const userData: Inserts<'users'> = {
-          firebase_uid: firebaseUser.uid,
-          email: firebaseUser.email || '',
-          full_name: firebaseUser.displayName || '',
-          plan: 'trial',
-          trial_ends_at: trialEndDate.toISOString()
+            firebase_uid: firebaseUser.uid,
+            email: firebaseUser.email || '',
+            full_name: firebaseUser.displayName || '',
+            plan: 'trial',
+            trial_ends_at: trialEndDate.toISOString()
           }
           
-          user = await this.createUser(userData)
-          console.log('✅ User successfully created in Supabase:', user.id)
-          
-          // Double-check user was created/exists after potential race condition handling
-          if (!user) {
-            console.log('🔄 Attempting to fetch user again after creation...')
-            user = await this.getCurrentUser(firebaseUser.uid)
-            if (!user) {
-              throw new Error('Failed to create or retrieve user after multiple attempts')
+          try {
+            user = await this.createUser(userData)
+            console.log('✅ User successfully created in Supabase:', user.id)
+          } catch (createError: any) {
+            // If user creation fails due to unique constraint (race condition), try to fetch existing user
+            if (createError.code === '23505' && createError.message.includes('firebase_uid')) {
+              console.log('🔄 Race condition detected - user already exists, fetching...')
+              user = await this.getCurrentUser(firebaseUser.uid)
+              if (!user) {
+                throw new Error('Failed to create or retrieve user after race condition')
+              }
+            } else {
+              throw createError
             }
           }
           
-          // Create trial record for new user
-          try {
-            console.log('🚀 Creating trial record for new user:', user.id)
-            await trialService.startTrial(user.id, 'professional')
-            console.log('✅ Trial record created successfully for user:', user.id)
-          } catch (trialError: any) {
-            console.error('❌ Failed to create trial record:', trialError)
-            // Don't throw error here - user creation was successful, trial creation is supplementary
-            // The user can still use the system and trial can be created later if needed
+          // Create trial record for new user (only if user was actually created)
+          if (user) {
+            try {
+              console.log('🚀 Creating trial record for new user:', user.id)
+              const existingTrial = await trialService.getActiveTrial(user.id)
+              if (!existingTrial) {
+                await trialService.startTrial(user.id, 'professional')
+                console.log('✅ Trial record created successfully for user:', user.id)
+              } else {
+                console.log('✅ Trial already exists for user:', user.id)
+              }
+            } catch (trialError: any) {
+              console.error('❌ Failed to create trial record:', trialError)
+              // Don't throw error here - user creation was successful, trial creation is supplementary
+            }
           }
         } else {
           console.log('✅ User already exists in Supabase:', user.id)
@@ -266,9 +299,9 @@ export const userService = {
             })
             console.log('✅ User updated in Supabase')
           }
-      }
-      
-      return user
+        }
+        
+        return user
         
       } catch (error: any) {
         lastError = error
@@ -277,7 +310,7 @@ export const userService = {
         // If this is the last attempt, throw the error
         if (attempt === maxRetries) {
           console.error('🚨 All sync attempts failed, throwing error')
-      throw error
+          throw error
         }
         
         // Wait before retrying (exponential backoff)

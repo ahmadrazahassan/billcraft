@@ -27,15 +27,21 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 async function testNetworkConnectivity(url: string): Promise<boolean> {
   try {
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 5000)
+    const timeoutId = setTimeout(() => controller.abort(), 3000) // Reduced timeout
     
-    const response = await fetch(url + '/health', {
+    // Test Supabase REST API endpoint instead of /health
+    const response = await fetch(url + '/rest/v1/', {
       method: 'GET',
+      headers: {
+        'apikey': process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+        'Content-Type': 'application/json'
+      },
       signal: controller.signal
     })
     
     clearTimeout(timeoutId)
-    return response.ok
+    // Accept both 200 (success) and 400/401 (auth issues) as connectivity success
+    return response.status < 500
   } catch (error) {
     console.warn('⚠️ Network connectivity test failed:', error)
     return false
