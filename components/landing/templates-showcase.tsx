@@ -189,7 +189,7 @@ export function TemplatesShowcase() {
                   <div className="absolute top-2 left-2 flex flex-col space-y-1">
                     {template.isPopular && (
                       <Badge className="bg-blue-500 text-white text-xs">
-                        <Star className="h-2 w-2 mr-1" />
+                        <div className="w-1.5 h-1.5 bg-white rounded-full mr-1"></div>
                         Popular
                       </Badge>
                     )}

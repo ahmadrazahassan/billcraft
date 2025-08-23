@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     // Get the user from Supabase to get the internal user ID
     const user = await userService.getCurrentUser(firebaseUid)
     if (!user) {
-      return NextResponse.json(
+        return NextResponse.json(
         { error: 'User not found in database. Please sync your account first.' },
         { status: 404 }
       )
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
 
     // Get detailed trial status with metrics
     const trialStatus = await trialService.getDetailedTrialStatus(user.id)
-    
+
     return NextResponse.json({
       success: true,
       ...trialStatus
@@ -86,11 +86,11 @@ export async function POST(request: NextRequest) {
     // Get the user from Supabase
     const user = await userService.getCurrentUser(firebaseUid)
     if (!user) {
-      return NextResponse.json(
+          return NextResponse.json(
         { error: 'User not found in database' },
         { status: 404 }
-      )
-    }
+          )
+        }
 
     const { action, plan = 'professional' } = await request.json()
 

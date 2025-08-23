@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { useState, useRef } from 'react'
+import { motion, useInView } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { Check, Star, Zap, Crown, Sparkles } from 'lucide-react'
+import { Check, Zap, Crown } from 'lucide-react'
 import Link from 'next/link'
 
 const pricingPlans = [
@@ -86,6 +86,32 @@ const pricingPlans = [
 
 export function Pricing() {
   const [isYearly, setIsYearly] = useState(false)
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true, margin: "-100px" })
+  
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+        delayChildren: 0.3
+      }
+    }
+  }
+  
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30, scale: 0.9 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.6,
+        ease: [0.25, 0.46, 0.45, 0.94]
+      }
+    }
+  }
 
   const handlePlanClick = (plan: any) => {
     if (plan.name === 'Free') {
@@ -188,7 +214,7 @@ export function Pricing() {
                 {plan.popular && (
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                       <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-2 rounded-full text-sm font-bold flex items-center space-x-2 shadow-lg">
-                        <Star className="h-4 w-4" />
+                        <div className="w-2 h-2 bg-white rounded-full"></div>
                       <span>Most Popular</span>
                     </div>
                   </div>
