@@ -1,33 +1,5 @@
 import { Palette, Sparkles, Camera, Brush, Zap, Heart, Phone, Mail } from 'lucide-react'
-
-interface InvoiceData {
-  invoiceNumber: string
-  date: string
-  dueDate: string
-  company: {
-    name: string
-    address: string
-    city: string
-    phone: string
-    email: string
-  }
-  client: {
-    name: string
-    address: string
-    city: string
-  }
-  items: Array<{
-    description: string
-    quantity: number
-    rate: number
-    amount: number
-  }>
-  subtotal: number
-  tax: number
-  total: number
-  notes?: string
-  terms?: string
-}
+import { InvoiceData, getCurrencySymbol, TemplateLogo } from './template-utils'
 
 interface CoralModernTemplateProps {
   data: InvoiceData
@@ -35,6 +7,8 @@ interface CoralModernTemplateProps {
 }
 
 export function CoralModernTemplate({ data, isPreview = false }: CoralModernTemplateProps) {
+  const currencySymbol = getCurrencySymbol(data.currency)
+  
   return (
     <div className="bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 p-8 max-w-4xl mx-auto relative overflow-hidden min-h-screen">
       {/* Modern Coral Background */}
@@ -48,11 +22,22 @@ export function CoralModernTemplate({ data, isPreview = false }: CoralModernTemp
           <div className="flex items-start justify-between">
             <div className="flex items-center space-x-6">
               <div className="relative">
-                <div className="w-24 h-24 bg-gradient-to-br from-orange-500 via-red-500 to-pink-500 rounded-2xl flex items-center justify-center shadow-2xl shadow-orange-500/30 transform rotate-3">
-                  <Palette className="h-12 w-12 text-white" />
+                <div className="w-24 h-24 flex items-center justify-center shadow-2xl shadow-orange-500/30 transform rotate-3">
+                  {data.company.logo ? (
+                    <img 
+                      src={data.company.logo} 
+                      alt={`${data.company.name} logo`}
+                      className="w-full h-full object-contain"
+                      style={{ maxWidth: '100%', maxHeight: '100%', backgroundColor: 'transparent' }}
+                    />
+                  ) : (
+                    <div className="w-24 h-24 bg-gradient-to-br from-orange-500 via-red-500 to-pink-500 rounded-2xl flex items-center justify-center">
+                      <Palette className="h-12 w-12 text-white" />
+                    </div>
+                  )}
                 </div>
                 <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-400 rounded-full flex items-center justify-center shadow-lg animate-pulse">
-                  <Sparkles className="h-4 w-4 text-white" />
+                  <div className="w-2 h-2 bg-white rounded-full"></div>
                 </div>
               </div>
               <div>
@@ -143,13 +128,13 @@ export function CoralModernTemplate({ data, isPreview = false }: CoralModernTemp
                           Qty: {item.quantity}
                         </span>
                         <span className="text-slate-600 font-bold bg-white px-3 py-1 rounded-full border border-orange-200">
-                          Rate: ${item.rate.toFixed(2)}
+                          Rate: {currencySymbol}${item.rate.toFixed(2)}
                         </span>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600">
-                        ${item.amount.toFixed(2)}
+                        {currencySymbol}${item.amount.toFixed(2)}
                       </p>
                     </div>
                   </div>
@@ -167,16 +152,16 @@ export function CoralModernTemplate({ data, isPreview = false }: CoralModernTemp
             <div className="w-96 space-y-4">
               <div className="flex justify-between items-center py-3 border-b border-orange-200">
                 <span className="text-slate-600 font-bold">Subtotal</span>
-                <span className="text-xl font-black text-slate-900">${data.subtotal.toFixed(2)}</span>
+                <span className="text-xl font-black text-slate-900">{currencySymbol}${data.subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center py-3 border-b border-red-200">
                 <span className="text-slate-600 font-bold">Tax</span>
-                <span className="text-xl font-black text-slate-900">${data.tax.toFixed(2)}</span>
+                <span className="text-xl font-black text-slate-900">{currencySymbol}${data.tax.toFixed(2)}</span>
               </div>
               <div className="bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 rounded-xl p-4 shadow-lg transform -rotate-1">
                 <div className="flex justify-between items-center">
                   <span className="text-xl font-black text-white">Total Amount</span>
-                  <span className="text-3xl font-black text-white">${data.total.toFixed(2)}</span>
+                  <span className="text-3xl font-black text-white">{currencySymbol}${data.total.toFixed(2)}</span>
                 </div>
               </div>
             </div>

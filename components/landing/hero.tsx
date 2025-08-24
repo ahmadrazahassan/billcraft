@@ -3,7 +3,7 @@
 import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { ArrowRight, Star, FileText } from 'lucide-react'
+import { ArrowRight, FileText } from 'lucide-react'
 import { useRef } from 'react'
 
 export function Hero() {

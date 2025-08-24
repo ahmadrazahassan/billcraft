@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Star, Quote } from 'lucide-react'
+import { Quote } from 'lucide-react'
 
 const testimonials = [
   {
@@ -75,7 +75,7 @@ export function Testimonials() {
                 {/* Rating */}
                 <div className="flex items-center space-x-1 mb-6">
                   {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="h-4 w-4 fill-primary text-primary" />
+                    <div key={i} className="w-4 h-4 bg-primary rounded-full"></div>
                   ))}
                 </div>
 

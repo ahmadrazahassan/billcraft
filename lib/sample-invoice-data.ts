@@ -62,19 +62,19 @@ export interface InvoiceData {
 
 export const sampleInvoiceData: InvoiceData = {
   // Invoice Details
-  invoiceNumber: "INV-2024-001",
-  date: "2024-01-15",
-  dueDate: "2024-02-14",
+  invoiceNumber: "INV-2025-001",
+  date: "2025-01-15",
+  dueDate: "2025-02-14",
   status: "sent",
 
   // Company Information
   company: {
-    name: "BillCraft Solutions",
-    address: "123 Business Avenue",
-    city: "New York, NY 10001",
-    email: "hello@billcraft.com",
-    phone: "+1 (555) 123-4567",
-    website: "www.billcraft.com"
+    name: "Layerium cloud",
+    address: "Pakistan",
+    city: "LHR",
+    email: "layeriumcloud@admin.com",
+    phone: "+923407685083",
+    website: "www.layeriumcloud.com"
   },
 
   // Client Information
@@ -131,7 +131,7 @@ export const sampleInvoiceData: InvoiceData = {
   clientAddress: "456 Client Street",
   clientCity: "Los Angeles, CA 90210",
   clientEmail: "accounting@acme.com",
-  invoiceDate: "2024-01-15",
+  invoiceDate: "2025-01-15",
   taxRate: 8.5,
   taxAmount: 331.50
 }

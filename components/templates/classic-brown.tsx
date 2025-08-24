@@ -1,31 +1,5 @@
 import { Coffee, Leaf, BookOpen, Crown } from 'lucide-react'
-
-interface InvoiceData {
-  invoiceNumber: string
-  date: string
-  dueDate: string
-  company: {
-    name: string
-    address: string
-    city: string
-    phone: string
-    email: string
-  }
-  client: {
-    name: string
-    address: string
-    city: string
-  }
-  items: Array<{
-    description: string
-    quantity: number
-    rate: number
-    amount: number
-  }>
-  subtotal: number
-  tax: number
-  total: number
-}
+import { InvoiceData, getCurrencySymbol, TemplateLogo } from './template-utils'
 
 interface ClassicBrownTemplateProps {
   data: InvoiceData
@@ -33,6 +7,8 @@ interface ClassicBrownTemplateProps {
 }
 
 export function ClassicBrownTemplate({ data, isPreview = false }: ClassicBrownTemplateProps) {
+  const currencySymbol = getCurrencySymbol(data.currency)
+  
   return (
     <div className="bg-amber-50 p-8 max-w-4xl mx-auto border border-amber-200">
       {/* Elegant Header */}
@@ -185,10 +161,10 @@ export function ClassicBrownTemplate({ data, isPreview = false }: ClassicBrownTe
                 </span>
               </div>
               <div className="col-span-2 text-right text-amber-700 font-semibold">
-                ${item.rate.toFixed(2)}
+                {currencySymbol}${item.rate.toFixed(2)}
               </div>
               <div className="col-span-2 text-right font-serif font-bold text-amber-900 text-lg">
-                ${item.amount.toFixed(2)}
+                {currencySymbol}${item.amount.toFixed(2)}
               </div>
             </div>
           ))}
@@ -202,16 +178,16 @@ export function ClassicBrownTemplate({ data, isPreview = false }: ClassicBrownTe
             <div className="space-y-4">
               <div className="flex justify-between items-center py-3 border-b border-amber-300">
                 <span className="font-serif text-amber-800 font-semibold">Subtotal</span>
-                <span className="font-bold text-amber-900">${data.subtotal.toFixed(2)}</span>
+                <span className="font-bold text-amber-900">{currencySymbol}${data.subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center py-3 border-b border-amber-300">
                 <span className="font-serif text-amber-800 font-semibold">Tax</span>
-                <span className="font-bold text-amber-900">${data.tax.toFixed(2)}</span>
+                <span className="font-bold text-amber-900">{currencySymbol}${data.tax.toFixed(2)}</span>
               </div>
               <div className="bg-amber-700 text-amber-50 rounded-lg p-4 -m-2">
                 <div className="flex justify-between items-center">
                   <span className="text-2xl font-serif font-bold">TOTAL</span>
-                  <span className="text-3xl font-serif font-bold">${data.total.toFixed(2)}</span>
+                  <span className="text-3xl font-serif font-bold">{currencySymbol}${data.total.toFixed(2)}</span>
                 </div>
               </div>
             </div>

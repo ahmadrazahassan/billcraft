@@ -95,7 +95,12 @@ export function TemplatePreviewModal({ isOpen, onClose, template }: TemplatePrev
   const [copied, setCopied] = useState(false)
   const { user } = useAuth()
   const router = useRouter()
-  const { toast, success, error, info } = useToast()
+  const { toast, success, error: showError, info } = useToast()
+
+  // Early return if template is null
+  if (!template || !isOpen) {
+    return null
+  }
 
   const TemplateComponent = templateComponents[template.id as keyof typeof templateComponents]
   const sampleData = generateSampleData(template.id)
@@ -106,7 +111,7 @@ export function TemplatePreviewModal({ isOpen, onClose, template }: TemplatePrev
         // User is logged in, go to dashboard with template data
         console.log('Redirecting to:', `/dashboard/invoices/create?template=${template.id}`)
         router.push(`/dashboard/invoices/create?template=${template.id}`)
-        toast({
+        info({
           title: "Redirecting...",
           description: `Taking you to create invoice with ${template.name} template.`,
         })
@@ -115,7 +120,7 @@ export function TemplatePreviewModal({ isOpen, onClose, template }: TemplatePrev
         // User not logged in, redirect to signup
         console.log('Redirecting to signup')
         router.push('/auth/signup')
-        toast({
+        info({
           title: "Sign up Required",
           description: "Please sign up to use this template.",
         })
@@ -123,10 +128,9 @@ export function TemplatePreviewModal({ isOpen, onClose, template }: TemplatePrev
       }
     } catch (error) {
       console.error('Error redirecting:', error)
-      toast({
+      showError({
         title: "Redirect Failed",
         description: "Could not redirect. Please try again.",
-        variant: "destructive",
       })
     }
   }
@@ -223,14 +227,13 @@ export function TemplatePreviewModal({ isOpen, onClose, template }: TemplatePrev
         title: "Perfect PDF Downloaded!",
         description: `${template.name} template with exact styling has been downloaded.`,
       })
-    } catch (error) {
-      console.error('Error downloading PDF:', error)
-      toast({
-        title: "Download Failed",
-        description: "There was an error downloading the PDF. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
+          } catch (error) {
+        console.error('Error downloading PDF:', error)
+        showError({
+          title: "Download Failed",
+          description: "There was an error downloading the PDF. Please try again.",
+        })
+      } finally {
       setIsDownloading(false)
     }
   }
@@ -248,7 +251,7 @@ export function TemplatePreviewModal({ isOpen, onClose, template }: TemplatePrev
       await navigator.clipboard.writeText(JSON.stringify(templateData, null, 2))
       setCopied(true)
       
-      toast({
+      success({
         title: "Template Copied!",
         description: "Template data has been copied to clipboard.",
       })
@@ -256,10 +259,9 @@ export function TemplatePreviewModal({ isOpen, onClose, template }: TemplatePrev
       setTimeout(() => setCopied(false), 2000)
     } catch (error) {
       console.error('Error copying template:', error)
-      toast({
+      showError({
         title: "Copy Failed",
         description: "Could not copy template data. Please try again.",
-        variant: "destructive",
       })
     } finally {
       setIsCopying(false)
@@ -285,21 +287,20 @@ export function TemplatePreviewModal({ isOpen, onClose, template }: TemplatePrev
       // Fallback to copying URL
       try {
         await navigator.clipboard.writeText(`${window.location.origin}/templates?template=${template.id}`)
-        toast({
+        success({
           title: "Link Copied!",
           description: "Template link has been copied to clipboard.",
         })
       } catch (error) {
-        toast({
+        showError({
           title: "Share Failed",
           description: "Could not share template. Please try again.",
-          variant: "destructive",
         })
       }
     }
   }
 
-  if (!TemplateComponent) {
+  if (!TemplateComponent || !template) {
     return null
   }
 

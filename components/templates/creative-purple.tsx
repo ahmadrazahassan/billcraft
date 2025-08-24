@@ -1,20 +1,24 @@
-import { Palette, Zap, Star, Camera } from 'lucide-react'
+import { Palette, Zap, Camera } from 'lucide-react'
 
 interface InvoiceData {
   invoiceNumber: string
   date: string
   dueDate: string
+  currency: string
   company: {
     name: string
     address: string
     city: string
     phone: string
     email: string
+    website?: string
+    logo?: string
   }
   client: {
     name: string
     address: string
     city: string
+    email: string
   }
   items: Array<{
     description: string
@@ -27,12 +31,25 @@ interface InvoiceData {
   total: number
 }
 
+// Currency symbol helper
+const getCurrencySymbol = (currencyCode: string): string => {
+  const currencyMap: { [key: string]: string } = {
+    'USD': '$',
+    'EUR': '€',
+    'PKR': '₨',
+    'INR': '₹',
+  }
+  return currencyMap[currencyCode] || '$'
+}
+
 interface CreativePurpleTemplateProps {
   data: InvoiceData
   isPreview?: boolean
 }
 
 export function CreativePurpleTemplate({ data, isPreview = false }: CreativePurpleTemplateProps) {
+  const currencySymbol = getCurrencySymbol(data.currency)
+  
   return (
     <div className="bg-white p-8 max-w-4xl mx-auto relative overflow-hidden">
       {/* Decorative Elements */}
@@ -44,12 +61,21 @@ export function CreativePurpleTemplate({ data, isPreview = false }: CreativePurp
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-6">
             <div className="relative">
-              <div className="w-20 h-20 bg-purple-600 rounded-2xl flex items-center justify-center transform rotate-12">
-                <Palette className="h-10 w-10 text-white" />
+              <div className="w-20 h-20 flex items-center justify-center transform rotate-12 overflow-hidden">
+                {data.company.logo ? (
+                  <img 
+                    src={data.company.logo} 
+                    alt={`${data.company.name} logo`}
+                    className="w-full h-full object-contain"
+                    style={{ maxWidth: '100%', maxHeight: '100%', backgroundColor: 'transparent' }}
+                  />
+                ) : (
+                  <div className="w-20 h-20 bg-purple-600 rounded-2xl flex items-center justify-center">
+                    <Palette className="h-10 w-10 text-white" />
+                  </div>
+                )}
               </div>
-              <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center">
-                <Star className="h-3 w-3 text-white" />
-              </div>
+              <div className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-400 rounded-full"></div>
             </div>
             <div>
               <h1 className="text-4xl font-bold text-slate-900 mb-2">{data.company.name}</h1>
@@ -105,7 +131,7 @@ export function CreativePurpleTemplate({ data, isPreview = false }: CreativePurp
       <div className="mb-10">
         <h3 className="text-xl font-bold text-slate-900 mb-6 flex items-center">
           <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center mr-3">
-            <Star className="h-4 w-4 text-white" />
+            <div className="w-3 h-3 bg-white rounded-full"></div>
           </div>
           Creative Services
         </h3>
@@ -120,11 +146,11 @@ export function CreativePurpleTemplate({ data, isPreview = false }: CreativePurp
                     <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full font-medium">
                       Qty: {item.quantity}
                     </span>
-                    <span>Rate: ${item.rate.toFixed(2)}</span>
+                    <span>Rate: {currencySymbol}{item.rate.toFixed(2)}</span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-bold text-purple-600">${item.amount.toFixed(2)}</p>
+                  <p className="text-2xl font-bold text-purple-600">{currencySymbol}{item.amount.toFixed(2)}</p>
                 </div>
               </div>
             </div>
@@ -139,16 +165,16 @@ export function CreativePurpleTemplate({ data, isPreview = false }: CreativePurp
             <div className="w-80 space-y-4">
               <div className="flex justify-between items-center py-2">
                 <span className="text-slate-600">Subtotal</span>
-                <span className="font-semibold text-slate-900">${data.subtotal.toFixed(2)}</span>
+                <span className="font-semibold text-slate-900">{currencySymbol}{data.subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center py-2">
                 <span className="text-slate-600">Tax</span>
-                <span className="font-semibold text-slate-900">${data.tax.toFixed(2)}</span>
+                <span className="font-semibold text-slate-900">{currencySymbol}{data.tax.toFixed(2)}</span>
               </div>
               <div className="border-t-2 border-purple-600 pt-4">
                 <div className="flex justify-between items-center">
                   <span className="text-xl font-bold text-slate-900">Total Amount</span>
-                  <span className="text-3xl font-bold text-purple-600">${data.total.toFixed(2)}</span>
+                  <span className="text-3xl font-bold text-purple-600">{currencySymbol}{data.total.toFixed(2)}</span>
                 </div>
               </div>
             </div>

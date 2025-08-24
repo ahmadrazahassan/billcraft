@@ -1,33 +1,5 @@
 import { Heart, Flower, Flower2, Star, Sparkles, Camera, Phone, Mail } from 'lucide-react'
-
-interface InvoiceData {
-  invoiceNumber: string
-  date: string
-  dueDate: string
-  company: {
-    name: string
-    address: string
-    city: string
-    phone: string
-    email: string
-  }
-  client: {
-    name: string
-    address: string
-    city: string
-  }
-  items: Array<{
-    description: string
-    quantity: number
-    rate: number
-    amount: number
-  }>
-  subtotal: number
-  tax: number
-  total: number
-  notes?: string
-  terms?: string
-}
+import { InvoiceData, getCurrencySymbol, TemplateLogo } from './template-utils'
 
 interface PinkCreativeTemplateProps {
   data: InvoiceData
@@ -35,6 +7,8 @@ interface PinkCreativeTemplateProps {
 }
 
 export function PinkCreativeTemplate({ data, isPreview = false }: PinkCreativeTemplateProps) {
+  const currencySymbol = getCurrencySymbol(data.currency)
+  
   return (
     <div className="bg-gradient-to-br from-pink-50 via-rose-50 to-fuchsia-50 p-8 max-w-4xl mx-auto relative overflow-hidden min-h-screen">
       {/* Creative Pink Background */}
@@ -161,13 +135,13 @@ export function PinkCreativeTemplate({ data, isPreview = false }: PinkCreativeTe
                           Qty: {item.quantity}
                         </span>
                         <span className="text-rose-600 font-bold bg-white px-3 py-1 rounded-full border border-pink-200">
-                          Rate: ${item.rate.toFixed(2)}
+                          Rate: {currencySymbol}${item.rate.toFixed(2)}
                         </span>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-fuchsia-600">
-                        ${item.amount.toFixed(2)}
+                        {currencySymbol}${item.amount.toFixed(2)}
                       </p>
                     </div>
                   </div>
@@ -185,16 +159,16 @@ export function PinkCreativeTemplate({ data, isPreview = false }: PinkCreativeTe
             <div className="w-96 space-y-4">
               <div className="flex justify-between items-center py-3 border-b border-pink-200">
                 <span className="text-pink-600 font-bold">Subtotal</span>
-                <span className="text-xl font-black text-pink-900">${data.subtotal.toFixed(2)}</span>
+                <span className="text-xl font-black text-pink-900">{currencySymbol}${data.subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center py-3 border-b border-rose-200">
                 <span className="text-rose-600 font-bold">Tax</span>
-                <span className="text-xl font-black text-rose-900">${data.tax.toFixed(2)}</span>
+                <span className="text-xl font-black text-rose-900">{currencySymbol}${data.tax.toFixed(2)}</span>
               </div>
               <div className="bg-gradient-to-r from-pink-500 via-rose-500 to-fuchsia-500 rounded-xl p-4 shadow-lg transform -rotate-1">
                 <div className="flex justify-between items-center">
                   <span className="text-xl font-black text-white">Total Amount</span>
-                  <span className="text-3xl font-black text-white">${data.total.toFixed(2)}</span>
+                  <span className="text-3xl font-black text-white">{currencySymbol}${data.total.toFixed(2)}</span>
                 </div>
               </div>
             </div>

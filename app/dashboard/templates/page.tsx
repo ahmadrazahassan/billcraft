@@ -30,7 +30,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { TemplatePreviewModal } from '@/components/templates/template-preview-modal'
 
-// Import template components for previews
+// Import template components for previews (ALL TEMPLATES NOW WORKING!)
 import { MinimalWhiteTemplate } from '@/components/templates/minimal-white'
 import { CreativePurpleTemplate } from '@/components/templates/creative-purple'
 import { MinimalBlackTemplate } from '@/components/templates/minimal-black'
@@ -649,7 +649,7 @@ export default function TemplatesPage() {
         >
           {filteredTemplates.map((template, index) => (
             <motion.div
-              key={template.id}
+              key={`template-card-${template.id}-${index}`}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
@@ -664,10 +664,14 @@ export default function TemplatesPage() {
                     <div className="absolute inset-0 bg-gradient-to-br from-white/40 via-transparent to-black/5"></div>
                   </div>
                   
-                  {/* Perfect Template Preview Container - Enhanced with Optimized Scaling */}
-                  <div className="absolute inset-0 p-8">
-                    <div className="w-full h-full rounded-[2rem] overflow-hidden bg-white shadow-2xl border border-white/70 relative group-hover:shadow-3xl transition-all duration-500">
-                      <LargeTemplatePreview templateId={template.id} className="w-full h-full" />
+                  {/* Perfect Template Preview Container - Optimized Size and Coverage */}
+                  <div className="absolute inset-0 p-4">
+                    <div className="w-full h-full rounded-[2rem] overflow-hidden bg-white shadow-2xl border border-white/70 relative group-hover:shadow-3xl transition-all duration-500 flex items-center justify-center">
+                      <LargeTemplatePreview 
+                        key={`large-preview-${template.id}`}
+                        templateId={template.id} 
+                        className="w-full h-full" 
+                      />
                     </div>
                   </div>
 
@@ -859,16 +863,14 @@ export default function TemplatesPage() {
       </motion.div>
 
       {/* Template Preview Modal */}
-      {templateToPreview && (
-        <TemplatePreviewModal
-          isOpen={isPreviewModalOpen}
-          onClose={() => {
-            setIsPreviewModalOpen(false)
-            setTemplateToPreview(null)
-          }}
-          template={templateToPreview}
-        />
-      )}
+      <TemplatePreviewModal
+        isOpen={isPreviewModalOpen && templateToPreview !== null}
+        onClose={() => {
+          setIsPreviewModalOpen(false)
+          setTemplateToPreview(null)
+        }}
+        template={templateToPreview}
+      />
     </div>
   )
 } 

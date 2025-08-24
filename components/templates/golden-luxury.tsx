@@ -1,33 +1,5 @@
 import { Crown, Star, Diamond, Trophy, Medal, Gift, Phone, Mail } from 'lucide-react'
-
-interface InvoiceData {
-  invoiceNumber: string
-  date: string
-  dueDate: string
-  company: {
-    name: string
-    address: string
-    city: string
-    phone: string
-    email: string
-  }
-  client: {
-    name: string
-    address: string
-    city: string
-  }
-  items: Array<{
-    description: string
-    quantity: number
-    rate: number
-    amount: number
-  }>
-  subtotal: number
-  tax: number
-  total: number
-  notes?: string
-  terms?: string
-}
+import { InvoiceData, getCurrencySymbol, TemplateLogo } from './template-utils'
 
 interface GoldenLuxuryTemplateProps {
   data: InvoiceData
@@ -35,6 +7,8 @@ interface GoldenLuxuryTemplateProps {
 }
 
 export function GoldenLuxuryTemplate({ data, isPreview = false }: GoldenLuxuryTemplateProps) {
+  const currencySymbol = getCurrencySymbol(data.currency)
+  
   return (
     <div className="bg-gradient-to-br from-yellow-50 via-amber-50 to-orange-50 p-8 max-w-4xl mx-auto relative overflow-hidden min-h-screen">
       {/* Golden Background Elements */}
@@ -167,13 +141,13 @@ export function GoldenLuxuryTemplate({ data, isPreview = false }: GoldenLuxuryTe
                           Quantity: {item.quantity}
                         </span>
                         <span className="text-amber-700 font-black bg-white px-6 py-3 rounded-2xl border-3 border-amber-200 text-lg">
-                          Rate: ${item.rate.toFixed(2)}
+                          Rate: {currencySymbol}${item.rate.toFixed(2)}
                         </span>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-700 via-amber-700 to-orange-700">
-                        ${item.amount.toFixed(2)}
+                        {currencySymbol}${item.amount.toFixed(2)}
                       </p>
                     </div>
                   </div>
@@ -191,11 +165,11 @@ export function GoldenLuxuryTemplate({ data, isPreview = false }: GoldenLuxuryTe
             <div className="w-full max-w-2xl space-y-8">
               <div className="flex justify-between items-center py-6 border-b-2 border-yellow-300">
                 <span className="text-3xl text-yellow-700 font-black">Subtotal</span>
-                <span className="text-4xl font-black text-yellow-900">${data.subtotal.toFixed(2)}</span>
+                <span className="text-4xl font-black text-yellow-900">{currencySymbol}${data.subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center py-6 border-b-2 border-amber-300">
                 <span className="text-3xl text-amber-700 font-black">Tax</span>
-                <span className="text-4xl font-black text-amber-900">${data.tax.toFixed(2)}</span>
+                <span className="text-4xl font-black text-amber-900">{currencySymbol}${data.tax.toFixed(2)}</span>
               </div>
               <div className="bg-gradient-to-r from-yellow-500 via-amber-500 to-orange-500 rounded-3xl p-8 shadow-2xl">
                 <div className="flex justify-between items-center">
@@ -204,7 +178,7 @@ export function GoldenLuxuryTemplate({ data, isPreview = false }: GoldenLuxuryTe
                     Total Amount
                   </span>
                   <span className="text-6xl font-black text-white">
-                    ${data.total.toFixed(2)}
+                    {currencySymbol}${data.total.toFixed(2)}
                   </span>
                 </div>
               </div>

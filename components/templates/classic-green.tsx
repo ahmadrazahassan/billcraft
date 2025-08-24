@@ -1,31 +1,5 @@
 import { FileText, Building, Phone, Mail } from 'lucide-react'
-
-interface InvoiceData {
-  invoiceNumber: string
-  date: string
-  dueDate: string
-  company: {
-    name: string
-    address: string
-    city: string
-    phone: string
-    email: string
-  }
-  client: {
-    name: string
-    address: string
-    city: string
-  }
-  items: Array<{
-    description: string
-    quantity: number
-    rate: number
-    amount: number
-  }>
-  subtotal: number
-  tax: number
-  total: number
-}
+import { InvoiceData, getCurrencySymbol, TemplateLogo } from './template-utils'
 
 interface ClassicGreenTemplateProps {
   data: InvoiceData
@@ -33,15 +7,20 @@ interface ClassicGreenTemplateProps {
 }
 
 export function ClassicGreenTemplate({ data, isPreview = false }: ClassicGreenTemplateProps) {
+  const currencySymbol = getCurrencySymbol(data.currency)
+  
   return (
     <div className="bg-white p-8 max-w-4xl mx-auto border-2 border-slate-200">
       {/* Header */}
       <div className="border-b-4 border-green-600 pb-6 mb-8">
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 bg-green-600 rounded-lg flex items-center justify-center">
-              <Building className="h-8 w-8 text-white" />
-            </div>
+            <TemplateLogo 
+              logo={data.company.logo}
+              companyName={data.company.name}
+              fallbackIcon={<div className="w-16 h-16 bg-green-600 rounded-lg flex items-center justify-center"><Building className="h-8 w-8 text-white" /></div>}
+              size="lg"
+            />
             <div>
               <h1 className="text-3xl font-bold text-slate-900">{data.company.name}</h1>
               <p className="text-green-600 font-semibold text-lg">BUSINESS SOLUTIONS</p>

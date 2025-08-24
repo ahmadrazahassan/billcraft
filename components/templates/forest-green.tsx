@@ -1,33 +1,5 @@
 import { Leaf, TreePine, Flower2, Mountain, Sun, Recycle, Phone, Mail } from 'lucide-react'
-
-interface InvoiceData {
-  invoiceNumber: string
-  date: string
-  dueDate: string
-  company: {
-    name: string
-    address: string
-    city: string
-    phone: string
-    email: string
-  }
-  client: {
-    name: string
-    address: string
-    city: string
-  }
-  items: Array<{
-    description: string
-    quantity: number
-    rate: number
-    amount: number
-  }>
-  subtotal: number
-  tax: number
-  total: number
-  notes?: string
-  terms?: string
-}
+import { InvoiceData, getCurrencySymbol, TemplateLogo } from './template-utils'
 
 interface ForestGreenTemplateProps {
   data: InvoiceData
@@ -35,6 +7,8 @@ interface ForestGreenTemplateProps {
 }
 
 export function ForestGreenTemplate({ data, isPreview = false }: ForestGreenTemplateProps) {
+  const currencySymbol = getCurrencySymbol(data.currency)
+  
   return (
     <div className="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 p-8 max-w-4xl mx-auto relative overflow-hidden min-h-screen">
       {/* Nature Background Elements */}
@@ -159,13 +133,13 @@ export function ForestGreenTemplate({ data, isPreview = false }: ForestGreenTemp
                           Quantity: {item.quantity}
                         </span>
                         <span className="text-slate-600 font-semibold bg-white px-4 py-2 rounded-full border border-green-200">
-                          Rate: ${item.rate.toFixed(2)}
+                          Rate: {currencySymbol}${item.rate.toFixed(2)}
                         </span>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600">
-                        ${item.amount.toFixed(2)}
+                        {currencySymbol}${item.amount.toFixed(2)}
                       </p>
                     </div>
                   </div>
@@ -183,11 +157,11 @@ export function ForestGreenTemplate({ data, isPreview = false }: ForestGreenTemp
             <div className="w-full max-w-lg space-y-6">
               <div className="flex justify-between items-center py-4 border-b-2 border-green-200">
                 <span className="text-lg text-slate-600 font-semibold">Subtotal</span>
-                <span className="text-2xl font-bold text-slate-900">${data.subtotal.toFixed(2)}</span>
+                <span className="text-2xl font-bold text-slate-900">{currencySymbol}${data.subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center py-4 border-b-2 border-emerald-200">
                 <span className="text-lg text-slate-600 font-semibold">Tax</span>
-                <span className="text-2xl font-bold text-slate-900">${data.tax.toFixed(2)}</span>
+                <span className="text-2xl font-bold text-slate-900">{currencySymbol}${data.tax.toFixed(2)}</span>
               </div>
               <div className="bg-gradient-to-r from-green-500 via-emerald-500 to-teal-500 rounded-2xl p-6 shadow-xl">
                 <div className="flex justify-between items-center">
@@ -196,7 +170,7 @@ export function ForestGreenTemplate({ data, isPreview = false }: ForestGreenTemp
                     Total Amount
                   </span>
                   <span className="text-4xl font-bold text-white">
-                    ${data.total.toFixed(2)}
+                    {currencySymbol}${data.total.toFixed(2)}
                   </span>
                 </div>
               </div>

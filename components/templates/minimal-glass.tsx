@@ -1,33 +1,5 @@
 import { Circle, Square, Triangle, Hexagon, Eye, Layers } from 'lucide-react'
-
-interface InvoiceData {
-  invoiceNumber: string
-  date: string
-  dueDate: string
-  company: {
-    name: string
-    address: string
-    city: string
-    phone: string
-    email: string
-  }
-  client: {
-    name: string
-    address: string
-    city: string
-  }
-  items: Array<{
-    description: string
-    quantity: number
-    rate: number
-    amount: number
-  }>
-  subtotal: number
-  tax: number
-  total: number
-  notes?: string
-  terms?: string
-}
+import { InvoiceData, getCurrencySymbol, TemplateLogo } from './template-utils'
 
 interface MinimalGlassTemplateProps {
   data: InvoiceData
@@ -35,6 +7,8 @@ interface MinimalGlassTemplateProps {
 }
 
 export function MinimalGlassTemplate({ data, isPreview = false }: MinimalGlassTemplateProps) {
+  const currencySymbol = getCurrencySymbol(data.currency)
+  
   return (
     <div className="bg-gradient-to-br from-slate-100 to-gray-200 p-8 max-w-4xl mx-auto relative overflow-hidden min-h-screen">
       {/* Subtle Glass Background */}
@@ -140,8 +114,8 @@ export function MinimalGlassTemplate({ data, isPreview = false }: MinimalGlassTe
                   <tr key={index} className="bg-white/20 hover:bg-white/30 transition-colors duration-200">
                     <td className="px-6 py-4 text-gray-800 font-medium">{item.description}</td>
                     <td className="px-6 py-4 text-center text-gray-600">{item.quantity}</td>
-                    <td className="px-6 py-4 text-right text-gray-600">${item.rate.toFixed(2)}</td>
-                    <td className="px-6 py-4 text-right font-medium text-gray-800">${item.amount.toFixed(2)}</td>
+                    <td className="px-6 py-4 text-right text-gray-600">{currencySymbol}${item.rate.toFixed(2)}</td>
+                    <td className="px-6 py-4 text-right font-medium text-gray-800">{currencySymbol}${item.amount.toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -157,16 +131,16 @@ export function MinimalGlassTemplate({ data, isPreview = false }: MinimalGlassTe
             <div className="w-80 space-y-4">
               <div className="flex justify-between items-center py-3 border-b border-gray-300/30">
                 <span className="text-gray-600 font-medium">Subtotal</span>
-                <span className="text-lg font-medium text-gray-800">${data.subtotal.toFixed(2)}</span>
+                <span className="text-lg font-medium text-gray-800">{currencySymbol}${data.subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center py-3 border-b border-gray-300/30">
                 <span className="text-gray-600 font-medium">Tax</span>
-                <span className="text-lg font-medium text-gray-800">${data.tax.toFixed(2)}</span>
+                <span className="text-lg font-medium text-gray-800">{currencySymbol}${data.tax.toFixed(2)}</span>
               </div>
               <div className="bg-gray-800 rounded-lg p-4">
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-medium text-white">Total Amount</span>
-                  <span className="text-2xl font-light text-white">${data.total.toFixed(2)}</span>
+                  <span className="text-2xl font-light text-white">{currencySymbol}${data.total.toFixed(2)}</span>
                 </div>
               </div>
             </div>

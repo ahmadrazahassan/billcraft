@@ -1,33 +1,5 @@
 import { Cpu, Zap, Code, Database, Wifi, Monitor, Phone, Mail } from 'lucide-react'
-
-interface InvoiceData {
-  invoiceNumber: string
-  date: string
-  dueDate: string
-  company: {
-    name: string
-    address: string
-    city: string
-    phone: string
-    email: string
-  }
-  client: {
-    name: string
-    address: string
-    city: string
-  }
-  items: Array<{
-    description: string
-    quantity: number
-    rate: number
-    amount: number
-  }>
-  subtotal: number
-  tax: number
-  total: number
-  notes?: string
-  terms?: string
-}
+import { InvoiceData, getCurrencySymbol, TemplateLogo } from './template-utils'
 
 interface SilverTechTemplateProps {
   data: InvoiceData
@@ -35,6 +7,8 @@ interface SilverTechTemplateProps {
 }
 
 export function SilverTechTemplate({ data, isPreview = false }: SilverTechTemplateProps) {
+  const currencySymbol = getCurrencySymbol(data.currency)
+  
   return (
     <div className="bg-gradient-to-br from-slate-100 via-gray-100 to-zinc-100 p-8 max-w-4xl mx-auto relative overflow-hidden min-h-screen">
       {/* Tech Background Elements */}
@@ -169,13 +143,13 @@ export function SilverTechTemplate({ data, isPreview = false }: SilverTechTempla
                           QTY: {item.quantity}
                         </span>
                         <span className="text-gray-700 font-bold bg-white px-4 py-2 rounded-lg border border-gray-200">
-                          RATE: ${item.rate.toFixed(2)}
+                          RATE: {currencySymbol}${item.rate.toFixed(2)}
                         </span>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-700 to-gray-700 font-mono">
-                        ${item.amount.toFixed(2)}
+                        {currencySymbol}${item.amount.toFixed(2)}
                       </p>
                     </div>
                   </div>
@@ -193,11 +167,11 @@ export function SilverTechTemplate({ data, isPreview = false }: SilverTechTempla
             <div className="w-full max-w-lg space-y-6 font-mono">
               <div className="flex justify-between items-center py-4 border-b-2 border-slate-300">
                 <span className="text-xl text-slate-600 font-bold">SUBTOTAL:</span>
-                <span className="text-2xl font-bold text-slate-900">${data.subtotal.toFixed(2)}</span>
+                <span className="text-2xl font-bold text-slate-900">{currencySymbol}${data.subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center py-4 border-b-2 border-gray-300">
                 <span className="text-xl text-gray-600 font-bold">TAX_CALC:</span>
-                <span className="text-2xl font-bold text-gray-900">${data.tax.toFixed(2)}</span>
+                <span className="text-2xl font-bold text-gray-900">{currencySymbol}${data.tax.toFixed(2)}</span>
               </div>
               <div className="bg-gradient-to-r from-slate-600 to-gray-600 rounded-2xl p-6 shadow-xl">
                 <div className="flex justify-between items-center">
@@ -206,7 +180,7 @@ export function SilverTechTemplate({ data, isPreview = false }: SilverTechTempla
                     TOTAL_SUM:
                   </span>
                   <span className="text-4xl font-bold text-white">
-                    ${data.total.toFixed(2)}
+                    {currencySymbol}${data.total.toFixed(2)}
                   </span>
                 </div>
               </div>

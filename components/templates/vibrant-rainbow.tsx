@@ -1,33 +1,5 @@
 import { Palette, Sparkles, Rainbow, Sun, Star, Zap, Phone, Mail } from 'lucide-react'
-
-interface InvoiceData {
-  invoiceNumber: string
-  date: string
-  dueDate: string
-  company: {
-    name: string
-    address: string
-    city: string
-    phone: string
-    email: string
-  }
-  client: {
-    name: string
-    address: string
-    city: string
-  }
-  items: Array<{
-    description: string
-    quantity: number
-    rate: number
-    amount: number
-  }>
-  subtotal: number
-  tax: number
-  total: number
-  notes?: string
-  terms?: string
-}
+import { InvoiceData, getCurrencySymbol, TemplateLogo } from './template-utils'
 
 interface VibrantRainbowTemplateProps {
   data: InvoiceData
@@ -35,6 +7,8 @@ interface VibrantRainbowTemplateProps {
 }
 
 export function VibrantRainbowTemplate({ data, isPreview = false }: VibrantRainbowTemplateProps) {
+  const currencySymbol = getCurrencySymbol(data.currency)
+  
   return (
     <div className="bg-gradient-to-br from-red-50 via-yellow-50 via-green-50 via-blue-50 via-indigo-50 to-purple-50 p-8 max-w-4xl mx-auto relative overflow-hidden min-h-screen">
       {/* Rainbow Background Elements */}
@@ -167,13 +141,13 @@ export function VibrantRainbowTemplate({ data, isPreview = false }: VibrantRainb
                               Qty: {item.quantity}
                             </span>
                             <span className="text-slate-600 font-bold bg-white px-3 py-1 rounded-full border border-slate-200">
-                              Rate: ${item.rate.toFixed(2)}
+                              Rate: {currencySymbol}${item.rate.toFixed(2)}
                             </span>
                           </div>
                         </div>
                         <div className="text-right">
                           <p className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-600 via-yellow-600 via-green-600 via-blue-600 to-purple-600">
-                            ${item.amount.toFixed(2)}
+                            {currencySymbol}${item.amount.toFixed(2)}
                           </p>
                         </div>
                       </div>
@@ -194,16 +168,16 @@ export function VibrantRainbowTemplate({ data, isPreview = false }: VibrantRainb
               <div className="w-96 space-y-4">
                 <div className="flex justify-between items-center py-3 border-b-2 border-red-200">
                   <span className="text-slate-600 font-bold">Subtotal</span>
-                  <span className="text-xl font-black text-slate-900">${data.subtotal.toFixed(2)}</span>
+                  <span className="text-xl font-black text-slate-900">{currencySymbol}${data.subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center py-3 border-b-2 border-blue-200">
                   <span className="text-slate-600 font-bold">Tax</span>
-                  <span className="text-xl font-black text-slate-900">${data.tax.toFixed(2)}</span>
+                  <span className="text-xl font-black text-slate-900">{currencySymbol}${data.tax.toFixed(2)}</span>
                 </div>
                 <div className="bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500 rounded-xl p-4 shadow-lg">
                   <div className="flex justify-between items-center">
                     <span className="text-xl font-black text-white">Total Amount</span>
-                    <span className="text-3xl font-black text-white">${data.total.toFixed(2)}</span>
+                    <span className="text-3xl font-black text-white">{currencySymbol}${data.total.toFixed(2)}</span>
                   </div>
                 </div>
               </div>

@@ -1,33 +1,5 @@
 import { Waves, Anchor, Compass, Ship, Fish, Shell, Phone, Mail } from 'lucide-react'
-
-interface InvoiceData {
-  invoiceNumber: string
-  date: string
-  dueDate: string
-  company: {
-    name: string
-    address: string
-    city: string
-    phone: string
-    email: string
-  }
-  client: {
-    name: string
-    address: string
-    city: string
-  }
-  items: Array<{
-    description: string
-    quantity: number
-    rate: number
-    amount: number
-  }>
-  subtotal: number
-  tax: number
-  total: number
-  notes?: string
-  terms?: string
-}
+import { InvoiceData, getCurrencySymbol, TemplateLogo } from './template-utils'
 
 interface OceanWaveTemplateProps {
   data: InvoiceData
@@ -35,6 +7,8 @@ interface OceanWaveTemplateProps {
 }
 
 export function OceanWaveTemplate({ data, isPreview = false }: OceanWaveTemplateProps) {
+  const currencySymbol = getCurrencySymbol(data.currency)
+  
   return (
     <div className="bg-gradient-to-br from-blue-50 via-cyan-50 to-teal-50 p-8 max-w-4xl mx-auto relative overflow-hidden min-h-screen">
       {/* Ocean Wave Background */}
@@ -156,13 +130,13 @@ export function OceanWaveTemplate({ data, isPreview = false }: OceanWaveTemplate
                           Qty: {item.quantity}
                         </span>
                         <span className="text-slate-600 font-medium bg-white px-3 py-1 rounded-full border border-blue-200">
-                          Rate: ${item.rate.toFixed(2)}
+                          Rate: {currencySymbol}${item.rate.toFixed(2)}
                         </span>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-600">
-                        ${item.amount.toFixed(2)}
+                        {currencySymbol}${item.amount.toFixed(2)}
                       </p>
                     </div>
                   </div>
@@ -180,11 +154,11 @@ export function OceanWaveTemplate({ data, isPreview = false }: OceanWaveTemplate
             <div className="w-96 space-y-4">
               <div className="flex justify-between items-center py-3 border-b border-blue-200">
                 <span className="text-slate-600 font-medium">Subtotal</span>
-                <span className="text-xl font-bold text-slate-900">${data.subtotal.toFixed(2)}</span>
+                <span className="text-xl font-bold text-slate-900">{currencySymbol}${data.subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center py-3 border-b border-cyan-200">
                 <span className="text-slate-600 font-medium">Tax</span>
-                <span className="text-xl font-bold text-slate-900">${data.tax.toFixed(2)}</span>
+                <span className="text-xl font-bold text-slate-900">{currencySymbol}${data.tax.toFixed(2)}</span>
               </div>
               <div className="bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 rounded-xl p-4 shadow-lg">
                 <div className="flex justify-between items-center">
@@ -192,7 +166,7 @@ export function OceanWaveTemplate({ data, isPreview = false }: OceanWaveTemplate
                     <Waves className="h-5 w-5 mr-2" />
                     Total Amount
                   </span>
-                  <span className="text-3xl font-bold text-white">${data.total.toFixed(2)}</span>
+                  <span className="text-3xl font-bold text-white">{currencySymbol}${data.total.toFixed(2)}</span>
                 </div>
               </div>
             </div>

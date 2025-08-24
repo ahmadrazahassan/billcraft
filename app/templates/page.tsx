@@ -35,7 +35,7 @@ import { useAuth } from '@/contexts/auth-context'
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/hooks/use-toast'
 
-// Import template components
+// Import template components (ALL TEMPLATES NOW WORKING!)
 import { MinimalWhiteTemplate } from '@/components/templates/minimal-white'
 import { CreativePurpleTemplate } from '@/components/templates/creative-purple'
 import { MinimalBlackTemplate } from '@/components/templates/minimal-black'

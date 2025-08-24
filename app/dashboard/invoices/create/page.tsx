@@ -11,25 +11,17 @@ import {
   Download,
   Plus,
   Trash2,
-  Calendar,
   Building2,
   User,
-  Mail,
-  Phone,
-  MapPin,
   FileText,
   Hash,
   DollarSign,
-  Sparkles,
   Bot,
   Upload,
   ImageIcon,
   Paperclip,
   X,
   Loader2,
-  Copy,
-  MessageCircle,
-  Users,
   Package,
   Minimize2,
   Maximize2,
@@ -39,15 +31,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Card } from '@/components/ui/card'
-import { Select } from '@/components/ui/select'
 import { useAuth } from '@/contexts/auth-context'
 import { useToast } from '@/hooks/use-toast'
 import { InvoiceData } from '@/lib/sample-invoice-data'
 import { userService, invoiceService } from '@/lib/database'
 import { AIService, AIUtils } from '@/lib/ai-service'
 
-// Import template components
+// Import template components (ALL TEMPLATES NOW WORKING!)
 import { MinimalWhiteTemplate } from '@/components/templates/minimal-white'
 import { CreativePurpleTemplate } from '@/components/templates/creative-purple'
 import { MinimalBlackTemplate } from '@/components/templates/minimal-black'
@@ -58,8 +48,23 @@ import { ModernOrangeTemplate } from '@/components/templates/modern-orange'
 import { CorporateRedTemplate } from '@/components/templates/corporate-red'
 import { CreativeTealTemplate } from '@/components/templates/creative-teal'
 import { ClassicBrownTemplate } from '@/components/templates/classic-brown'
+import { GradientSunsetTemplate } from '@/components/templates/gradient-sunset'
+import { NeonCyberTemplate } from '@/components/templates/neon-cyber'
+import { ElegantRoseGoldTemplate } from '@/components/templates/elegant-rose-gold'
+import { DarkProfessionalTemplate } from '@/components/templates/dark-professional'
+import { OceanWaveTemplate } from '@/components/templates/ocean-wave'
+import { ForestGreenTemplate } from '@/components/templates/forest-green'
+import { CoralModernTemplate } from '@/components/templates/coral-modern'
+import { PlatinumEliteTemplate } from '@/components/templates/platinum-elite'
+import { VibrantRainbowTemplate } from '@/components/templates/vibrant-rainbow'
+import { MinimalGlassTemplate } from '@/components/templates/minimal-glass'
+import { ElectricBlueTemplate } from '@/components/templates/electric-blue'
+import { GoldenLuxuryTemplate } from '@/components/templates/golden-luxury'
+import { PinkCreativeTemplate } from '@/components/templates/pink-creative'
+import { EmeraldCorporateTemplate } from '@/components/templates/emerald-corporate'
+import { SilverTechTemplate } from '@/components/templates/silver-tech'
 
-// Template configurations
+// Template configurations (ALL TEMPLATES NOW WORKING!)
 const templateComponents = {
   'minimal-white': MinimalWhiteTemplate,
   'creative-purple': CreativePurpleTemplate,
@@ -71,6 +76,21 @@ const templateComponents = {
   'corporate-red': CorporateRedTemplate,
   'creative-teal': CreativeTealTemplate,
   'classic-brown': ClassicBrownTemplate,
+  'gradient-sunset': GradientSunsetTemplate,
+  'neon-cyber': NeonCyberTemplate,
+  'elegant-rose-gold': ElegantRoseGoldTemplate,
+  'dark-professional': DarkProfessionalTemplate,
+  'ocean-wave': OceanWaveTemplate,
+  'forest-green': ForestGreenTemplate,
+  'coral-modern': CoralModernTemplate,
+  'platinum-elite': PlatinumEliteTemplate,
+  'vibrant-rainbow': VibrantRainbowTemplate,
+  'minimal-glass': MinimalGlassTemplate,
+  'electric-blue': ElectricBlueTemplate,
+  'golden-luxury': GoldenLuxuryTemplate,
+  'pink-creative': PinkCreativeTemplate,
+  'emerald-corporate': EmeraldCorporateTemplate,
+  'silver-tech': SilverTechTemplate,
 }
 
 const templateNames = {
@@ -84,11 +104,34 @@ const templateNames = {
   'corporate-red': 'Corporate Power',
   'creative-teal': 'Creative Flow',
   'classic-brown': 'Classic Elegance',
+  'gradient-sunset': 'Gradient Sunset',
+  'neon-cyber': 'Neon Cyber',
+  'elegant-rose-gold': 'Elegant Rose Gold',
+  'dark-professional': 'Dark Professional',
+  'ocean-wave': 'Ocean Wave',
+  'forest-green': 'Forest Green',
+  'coral-modern': 'Coral Modern',
+  'platinum-elite': 'Platinum Elite',
+  'vibrant-rainbow': 'Vibrant Rainbow',
+  'minimal-glass': 'Minimal Glass',
+  'electric-blue': 'Electric Blue',
+  'golden-luxury': 'Golden Luxury',
+  'pink-creative': 'Pink Creative',
+  'emerald-corporate': 'Emerald Corporate',
+  'silver-tech': 'Silver Tech',
 }
+
+// Currency configurations
+const currencies = [
+  { code: 'USD', symbol: '$', name: 'US Dollar' },
+  { code: 'EUR', symbol: '€', name: 'Euro' },
+  { code: 'PKR', symbol: '₨', name: 'Pakistani Rupee' },
+  { code: 'INR', symbol: '₹', name: 'Indian Rupee' },
+]
 
 // Initial invoice data
 const initialInvoiceData: InvoiceData = {
-  invoiceNumber: "INV-2024-001",
+  invoiceNumber: "INV-2025-001",
   date: new Date().toISOString().split('T')[0],
   dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
   status: "draft",
@@ -98,7 +141,8 @@ const initialInvoiceData: InvoiceData = {
     city: "",
     email: "",
     phone: "",
-    website: ""
+    website: "",
+    logo: ""
   },
   client: {
     name: "",
@@ -130,7 +174,7 @@ interface AIMessage {
   attachments?: Array<{ name: string, url: string, type: string }>
 }
 
-export default function CreateInvoicePage(): JSX.Element {
+export default function CreateInvoicePage() {
   // State management
   const [invoiceData, setInvoiceData] = useState<InvoiceData>(initialInvoiceData)
   const [selectedTemplate, setSelectedTemplate] = useState<string>('modern-blue')
@@ -141,6 +185,10 @@ export default function CreateInvoicePage(): JSX.Element {
   const [discountAmount, setDiscountAmount] = useState<number>(0)
   const [savedInvoiceId, setSavedInvoiceId] = useState<string | null>(null)
 
+  // Logo upload state
+  const [logoFile, setLogoFile] = useState<File | null>(null)
+  const [logoPreview, setLogoPreview] = useState<string>('')
+
   // AI Chat State
   const [isAIOpen, setIsAIOpen] = useState<boolean>(false)
   const [aiMessages, setAiMessages] = useState<AIMessage[]>([])
@@ -150,22 +198,29 @@ export default function CreateInvoicePage(): JSX.Element {
 
   const aiMessagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const logoInputRef = useRef<HTMLInputElement>(null)
   
   // Hooks
   const { user } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { toast, success, error, info } = useToast()
+  const { toast, success, error: showError, info } = useToast()
 
   // Template component
   const TemplateComponent = templateComponents[selectedTemplate as keyof typeof templateComponents]
+
+  // Get current currency symbol
+  const getCurrentCurrencySymbol = () => {
+    const currency = currencies.find(c => c.code === invoiceData.currency)
+    return currency ? currency.symbol : '$'
+  }
 
   // Effects
   useEffect(() => {
     const templateParam = searchParams.get('template')
     if (templateParam && templateComponents[templateParam as keyof typeof templateComponents]) {
       setSelectedTemplate(templateParam)
-      toast({
+      success({
         title: "Template Selected!",
         description: `Using ${templateNames[templateParam as keyof typeof templateNames]} template.`,
       })
@@ -178,7 +233,7 @@ export default function CreateInvoicePage(): JSX.Element {
         const aiData = localStorage.getItem('ai_generated_invoice')
         if (aiData) {
           const parsedData = JSON.parse(aiData)
-          const updatedInvoiceData = AIUtils.mergeInvoiceData(invoiceData, parsedData)
+          const updatedInvoiceData = AIUtils.mergeInvoiceData(initialInvoiceData, parsedData)
           setInvoiceData(updatedInvoiceData)
           
           // Set tax rate if provided
@@ -198,34 +253,109 @@ export default function CreateInvoicePage(): JSX.Element {
         console.error('Error loading AI-generated invoice:', error)
       }
     }
-  }, [searchParams, toast, invoiceData])
+  }, [searchParams, success])
 
   useEffect(() => {
     calculateTotals()
   }, [invoiceData.items, taxRate, discountAmount])
 
-
-
   // Utility functions
-  const updateCompanyData = (field: string, value: string): void => {
+  const updateCompanyData = (field: string, value: string) => {
     setInvoiceData(prev => ({
       ...prev,
       company: { ...prev.company, [field]: value }
     }))
   }
 
-  const updateClientData = (field: string, value: string): void => {
+  // Logo handling functions
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        showError({
+          title: "Invalid File Type",
+          description: "Please upload an image file (PNG, JPG, SVG).",
+        })
+        return
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        showError({
+          title: "File Too Large",
+          description: "Please upload an image smaller than 5MB.",
+        })
+        return
+      }
+
+      // Clear previous logo first
+      setLogoFile(null)
+      setLogoPreview('')
+      
+      setLogoFile(file)
+      
+      // Create preview
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const result = e.target?.result as string
+        setLogoPreview(result)
+        
+        // Update invoice data with logo (replaces any existing logo)
+        setInvoiceData(prev => ({
+          ...prev,
+          company: { 
+            ...prev.company, 
+            logo: result 
+          }
+        }))
+        
+        success({
+          title: "Logo Uploaded Successfully!",
+          description: "Your company logo has been added to the invoice and will appear in the preview.",
+          duration: 3000,
+        })
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const removeLogo = () => {
+    setLogoFile(null)
+    setLogoPreview('')
+    
+    // Clear the file input
+    if (logoInputRef.current) {
+      logoInputRef.current.value = ''
+    }
+    
+    // Update invoice data to remove logo
+    setInvoiceData(prev => ({
+      ...prev,
+      company: { 
+        ...prev.company, 
+        logo: '' 
+      }
+    }))
+    
+    info({
+      title: "Logo Removed",
+      description: "Company logo has been removed from the invoice.",
+    })
+  }
+
+  const updateClientData = (field: string, value: string) => {
     setInvoiceData(prev => ({
       ...prev,
       client: { ...prev.client, [field]: value }
     }))
   }
 
-  const updateInvoiceData = (field: keyof InvoiceData, value: any): void => {
+  const updateInvoiceData = (field: keyof InvoiceData, value: any) => {
     setInvoiceData(prev => ({ ...prev, [field]: value }))
   }
 
-  const updateItem = (index: number, field: string, value: any): void => {
+  const updateItem = (index: number, field: string, value: any) => {
     setInvoiceData(prev => ({
       ...prev,
       items: prev.items.map((item, i) => 
@@ -240,7 +370,7 @@ export default function CreateInvoicePage(): JSX.Element {
     }))
   }
 
-  const addItem = (): void => {
+  const addItem = () => {
     const newItem = {
       id: String(invoiceData.items.length + 1),
       description: '',
@@ -254,7 +384,7 @@ export default function CreateInvoicePage(): JSX.Element {
     }))
   }
 
-  const removeItem = (index: number): void => {
+  const removeItem = (index: number) => {
     if (invoiceData.items.length > 1) {
       setInvoiceData(prev => ({
         ...prev,
@@ -263,7 +393,7 @@ export default function CreateInvoicePage(): JSX.Element {
     }
   }
 
-  const calculateTotals = (): void => {
+  const calculateTotals = () => {
     const subtotal = invoiceData.items.reduce((sum, item) => sum + (item.quantity * item.rate), 0)
     const tax = subtotal * (taxRate / 100)
     const total = subtotal + tax - discountAmount
@@ -279,7 +409,7 @@ export default function CreateInvoicePage(): JSX.Element {
   }
 
   // AI Functions
-  const scrollToBottomOfAI = (): void => {
+  const scrollToBottomOfAI = () => {
     setTimeout(() => {
       if (aiMessagesEndRef.current) {
         aiMessagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
@@ -287,7 +417,7 @@ export default function CreateInvoicePage(): JSX.Element {
     }, 100)
   }
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>): void => {
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (files) {
       const newFiles = Array.from(files)
@@ -295,11 +425,11 @@ export default function CreateInvoicePage(): JSX.Element {
     }
   }
 
-  const removeFile = (index: number): void => {
+  const removeFile = (index: number) => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index))
   }
 
-  const sendAIMessage = async (messageText?: string): Promise<void> => {
+  const sendAIMessage = async (messageText?: string) => {
     const textToSend = messageText || aiInput.trim()
     if ((!textToSend && selectedFiles.length === 0) || isAiLoading) return
 
@@ -385,26 +515,25 @@ export default function CreateInvoicePage(): JSX.Element {
     }
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>): void => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       sendAIMessage()
     }
   }
 
-  const clearAIChat = (): void => {
+  const clearAIChat = () => {
     setAiMessages([])
     setAiInput('')
     setSelectedFiles([])
   }
 
   // Action handlers
-  const handleSave = async (): Promise<void> => {
+  const handleSave = async () => {
     if (!user) {
-      toast({
+      showError({
         title: "Authentication Required",
         description: "Please sign in to save invoices.",
-        variant: "destructive",
       })
       return
     }
@@ -414,7 +543,7 @@ export default function CreateInvoicePage(): JSX.Element {
       let currentUser = await userService.getCurrentUser(user.uid)
       if (!currentUser) {
         currentUser = await userService.debugCreateUser(user)
-        toast({
+        success({
           title: "User Synced!",
           description: "Your account has been synced with the database.",
         })
@@ -449,38 +578,35 @@ export default function CreateInvoicePage(): JSX.Element {
       const savedInvoice = await invoiceService.createInvoice(invoiceDataToSave)
       setSavedInvoiceId(savedInvoice.id)
 
-      toast({
+      success({
         title: "Invoice Saved Successfully!",
         description: `Invoice ${savedInvoice.invoice_number} has been saved to your account.`,
       })
 
     } catch (error: any) {
       console.error('Database save error:', error)
-      toast({
+      showError({
         title: "Save Failed",
         description: error.message || "Could not save invoice. Please try again.",
-        variant: "destructive",
       })
     } finally {
       setIsSaving(false)
     }
   }
 
-  const handleSend = async (): Promise<void> => {
+  const handleSend = async () => {
     if (!user) {
-      toast({
+      showError({
         title: "Authentication Required",
         description: "Please sign in to send invoices.",
-        variant: "destructive",
       })
       return
     }
 
     if (!invoiceData.client.email) {
-      toast({
+      showError({
         title: "Client Email Required",
         description: "Please add a client email address to send the invoice.",
-        variant: "destructive",
       })
       return
     }
@@ -497,7 +623,7 @@ export default function CreateInvoicePage(): JSX.Element {
 
       await new Promise(resolve => setTimeout(resolve, 1500))
       
-      toast({
+      success({
         title: "Invoice Sent Successfully!",
         description: `Invoice sent to ${invoiceData.client.email}`,
       })
@@ -505,17 +631,16 @@ export default function CreateInvoicePage(): JSX.Element {
       router.push('/dashboard/invoices')
     } catch (error: any) {
       console.error('Send error:', error)
-      toast({
+      showError({
         title: "Send Failed",
         description: error.message || "Could not send invoice. Please try again.",
-        variant: "destructive",
       })
     } finally {
       setIsSending(false)
     }
   }
 
-  const handleDownloadPDF = async (): Promise<void> => {
+  const handleDownloadPDF = async () => {
     try {
       const html2canvas = (await import('html2canvas')).default
       const jsPDF = (await import('jspdf')).default
@@ -604,10 +729,9 @@ export default function CreateInvoicePage(): JSX.Element {
       })
     } catch (error) {
       console.error('Error downloading PDF:', error)
-      toast({
+      showError({
         title: "Download Failed",
         description: "Could not download PDF. Please try again.",
-        variant: "destructive",
       })
     }
   }
@@ -629,84 +753,120 @@ export default function CreateInvoicePage(): JSX.Element {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <div className="bg-white/80 backdrop-blur-xl border-b border-slate-200/60 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+      {/* Enhanced Header */}
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="bg-white/95 backdrop-blur-xl border-b border-slate-200/60 sticky top-0 z-50 shadow-sm"
+      >
+        <div className="max-w-7xl mx-auto px-6 py-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <button
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => router.push('/dashboard/invoices')}
-                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                className="p-2.5 hover:bg-slate-100 rounded-xl transition-all duration-200 group"
               >
-                <ArrowLeft className="w-5 h-5 text-slate-600" />
-              </button>
+                <ArrowLeft className="w-5 h-5 text-slate-600 group-hover:text-slate-900" />
+              </motion.button>
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <FileText className="w-5 h-5 text-white" />
+                </div>
               <div>
                 <h1 className="text-xl font-bold text-slate-900">Create Invoice</h1>
-                <p className="text-sm text-slate-500">Design your professional invoice</p>
+                  <p className="text-sm text-slate-500">Design your professional invoice with ease</p>
+                </div>
               </div>
             </div>
             
-            {/* Action Buttons */}
-            <div className="flex items-center space-x-2">
-              <button
+            {/* Enhanced Action Buttons */}
+            <div className="flex items-center space-x-3">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => setIsPreviewMode(!isPreviewMode)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 shadow-sm ${
                   isPreviewMode 
-                    ? 'bg-purple-100 text-purple-700 border border-purple-200' 
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    ? 'bg-purple-100 text-purple-700 border border-purple-200 shadow-purple-100' 
+                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
                 }`}
               >
-                <Eye className="w-4 h-4 mr-1.5 inline" />
+                <Eye className="w-4 h-4 mr-2 inline" />
                 {isPreviewMode ? 'Edit Mode' : 'Live Preview'}
-              </button>
+              </motion.button>
               
-              <button
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => setIsAIOpen(!isAIOpen)}
-                className="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all text-sm font-medium shadow-sm"
+                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-xl hover:from-purple-700 hover:to-purple-800 transition-all text-sm font-medium shadow-lg hover:shadow-purple-500/25"
               >
-                <Bot className="w-4 h-4 mr-1.5 inline" />
+                <Bot className="w-4 h-4 mr-2 inline" />
                 BillCraft AI
-              </button>
+              </motion.button>
               
-              <button
+              <div className="flex items-center space-x-2 bg-white rounded-xl p-1 shadow-sm border border-slate-200">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 onClick={handleDownloadPDF}
                 disabled={isSending}
                 className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-all text-sm font-medium shadow-sm"
               >
-                <Download className="w-4 h-4 mr-1.5 inline" />
+                  {isSending ? <Loader2 className="w-4 h-4 mr-1.5 inline animate-spin" /> : <Download className="w-4 h-4 mr-1.5 inline" />}
                 Download
-              </button>
+                </motion.button>
               
-              <button
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 onClick={handleSave}
                 disabled={isSaving}
                 className="px-3 py-1.5 bg-slate-600 text-white rounded-lg hover:bg-slate-700 disabled:opacity-50 transition-all text-sm font-medium shadow-sm"
               >
-                <Save className="w-4 h-4 mr-1.5 inline" />
-                {isSaving ? 'Saving...' : 'Save Draft'}
-              </button>
-              
-              <button
+                  {isSaving ? <Loader2 className="w-4 h-4 mr-1.5 inline animate-spin" /> : <Save className="w-4 h-4 mr-1.5 inline" />}
+                  {isSaving ? 'Saving...' : 'Save'}
+                </motion.button>
+                
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 onClick={handleSend}
                 disabled={isSending}
-                className="px-4 py-1.5 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 disabled:opacity-50 transition-all text-sm font-medium shadow-sm"
+                  className="px-4 py-1.5 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 disabled:opacity-50 transition-all text-sm font-medium shadow-lg hover:shadow-green-500/25"
               >
-                <Send className="w-4 h-4 mr-1.5 inline" />
+                  {isSending ? <Loader2 className="w-4 h-4 mr-1.5 inline animate-spin" /> : <Send className="w-4 h-4 mr-1.5 inline" />}
                 {isSending ? 'Sending...' : 'Send Invoice'}
-              </button>
+                </motion.button>
             </div>
           </div>
         </div>
       </div>
+      </motion.div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      {/* Enhanced Main Content */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.2 }}
+        className="max-w-7xl mx-auto px-6 py-8"
+      >
         <div className={`grid gap-8 transition-all duration-500 ${isPreviewMode ? 'grid-cols-1' : 'grid-cols-1 lg:grid-cols-2'}`}>
-          {/* Form Section */}
+          {/* Enhanced Form Section */}
           {!isPreviewMode && (
-            <div className="lg:col-span-1">
-              <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl border border-white/20 overflow-hidden">
-                <div className="p-8 space-y-8">
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="lg:col-span-1"
+            >
+              <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/30 overflow-hidden relative">
+                {/* Glass effect overlay */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none"></div>
+                <div className="relative p-8 space-y-8">
                   {/* Company Information */}
                   <div className="space-y-6">
                     <div className="flex items-center space-x-3">
@@ -717,6 +877,65 @@ export default function CreateInvoicePage(): JSX.Element {
                         <h3 className="text-lg font-bold text-slate-900">Company Information</h3>
                         <p className="text-sm text-slate-500">Your business details</p>
                       </div>
+                    </div>
+                    
+                    {/* Logo Upload Section */}
+                    <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl border border-blue-100">
+                      <div className="flex items-center justify-between mb-3">
+                        <Label className="text-sm font-semibold text-slate-700">Company Logo</Label>
+                        {logoPreview && (
+                          <button
+                            onClick={removeLogo}
+                            className="px-2 py-1 text-xs bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors flex items-center space-x-1"
+                          >
+                            <X className="w-3 h-3" />
+                            <span>Remove</span>
+                          </button>
+                        )}
+                      </div>
+                      
+                      {!logoPreview ? (
+                        <div 
+                          onClick={() => logoInputRef.current?.click()}
+                          className="border-2 border-dashed border-blue-300 rounded-xl p-6 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-all group"
+                        >
+                          <div className="w-12 h-12 mx-auto mb-3 bg-blue-100 rounded-xl flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                            <Upload className="w-6 h-6 text-blue-600" />
+                          </div>
+                          <p className="text-sm font-medium text-slate-700 mb-1">Upload Company Logo</p>
+                          <p className="text-xs text-slate-500">PNG, JPG, SVG up to 5MB</p>
+                        </div>
+                      ) : (
+                        <div className="flex items-center space-x-4 p-3 bg-white rounded-xl border border-slate-200">
+                          <div className="w-16 h-16 bg-slate-100 rounded-lg overflow-hidden flex items-center justify-center">
+                            <img 
+                              src={logoPreview} 
+                              alt="Company Logo" 
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-slate-700">Logo Uploaded</p>
+                            <p className="text-xs text-slate-500">{logoFile?.name}</p>
+                            <div className="flex items-center space-x-2 mt-2">
+                              <button
+                                onClick={() => logoInputRef.current?.click()}
+                                className="px-2 py-1 text-xs bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors"
+                              >
+                                Replace
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <input
+                        ref={logoInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleLogoUpload}
+                        className="hidden"
+                      />
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -783,13 +1002,13 @@ export default function CreateInvoicePage(): JSX.Element {
                       </div>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                       <div className="space-y-1.5">
                         <Label className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Invoice Number</Label>
                         <Input
                           value={invoiceData.invoiceNumber}
                           onChange={(e) => updateInvoiceData('invoiceNumber', e.target.value)}
-                          placeholder="INV-001"
+                          placeholder="INV-2025-001"
                           className="h-8 text-sm rounded-lg border-slate-200 focus:border-purple-500 focus:ring-purple-500/20 bg-white/80"
                         />
                       </div>
@@ -810,6 +1029,20 @@ export default function CreateInvoicePage(): JSX.Element {
                           onChange={(e) => updateInvoiceData('dueDate', e.target.value)}
                           className="h-8 text-sm rounded-lg border-slate-200 focus:border-purple-500 focus:ring-purple-500/20 bg-white/80"
                         />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-semibold text-slate-700 uppercase tracking-wide">Currency</Label>
+                        <select
+                          value={invoiceData.currency}
+                          onChange={(e) => updateInvoiceData('currency', e.target.value)}
+                          className="h-8 text-sm rounded-lg border-slate-200 focus:border-purple-500 focus:ring-purple-500/20 bg-white/80 w-full px-2"
+                        >
+                          {currencies.map(currency => (
+                            <option key={currency.code} value={currency.code}>
+                              {currency.symbol} {currency.code} - {currency.name}
+                            </option>
+                          ))}
+                        </select>
                       </div>
                     </div>
                   </div>
@@ -906,21 +1139,21 @@ export default function CreateInvoicePage(): JSX.Element {
                             <div className="col-span-4 md:col-span-2 space-y-1">
                               <Label className="text-xs font-medium text-slate-600">Rate</Label>
                               <div className="relative">
-                                <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-slate-500 text-xs">$</span>
+                                <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-slate-500 text-xs">{getCurrentCurrencySymbol()}</span>
                                 <Input
                                   type="number"
                                   min="0"
                                   step="0.01"
                                   value={item.rate}
                                   onChange={(e) => updateItem(index, 'rate', parseFloat(e.target.value) || 0)}
-                                  className="h-7 text-xs rounded-lg border-slate-200 focus:border-orange-500 focus:ring-orange-500/20 bg-white/90 pl-6"
+                                  className="h-7 text-xs rounded-lg border-slate-200 focus:border-orange-500 focus:ring-orange-500/20 bg-white/90 pl-7"
                                 />
                               </div>
                             </div>
                             <div className="col-span-3 md:col-span-2 space-y-1">
                               <Label className="text-xs font-medium text-slate-600">Amount</Label>
                               <div className="h-7 px-2 bg-slate-200/60 rounded-lg border border-slate-200 flex items-center font-bold text-slate-900 text-xs">
-                                ${(item.quantity * item.rate).toFixed(2)}
+                                {getCurrentCurrencySymbol()}{(item.quantity * item.rate).toFixed(2)}
                               </div>
                             </div>
                             <div className="col-span-1 flex justify-end">
@@ -943,7 +1176,7 @@ export default function CreateInvoicePage(): JSX.Element {
                       <div className="space-y-3">
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-slate-600">Subtotal</span>
-                          <span className="text-sm font-bold text-slate-900">${invoiceData.subtotal.toFixed(2)}</span>
+                          <span className="text-sm font-bold text-slate-900">{getCurrentCurrencySymbol()}{invoiceData.subtotal.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between items-center">
                           <div className="flex items-center space-x-2">
@@ -961,13 +1194,13 @@ export default function CreateInvoicePage(): JSX.Element {
                               <span className="text-xs text-slate-500">%</span>
                             </div>
                           </div>
-                          <span className="text-sm font-bold text-slate-900">${invoiceData.tax.toFixed(2)}</span>
+                          <span className="text-sm font-bold text-slate-900">{getCurrentCurrencySymbol()}{invoiceData.tax.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between items-center">
                           <div className="flex items-center space-x-2">
                             <span className="text-sm text-slate-600">Discount</span>
                             <div className="flex items-center space-x-1">
-                              <span className="text-xs text-slate-500">$</span>
+                              <span className="text-xs text-slate-500">{getCurrentCurrencySymbol()}</span>
                               <input
                                 type="number"
                                 value={discountAmount}
@@ -979,12 +1212,12 @@ export default function CreateInvoicePage(): JSX.Element {
                               />
                             </div>
                           </div>
-                          <span className="text-sm font-bold text-red-600">-${discountAmount.toFixed(2)}</span>
+                          <span className="text-sm font-bold text-red-600">-{getCurrentCurrencySymbol()}{discountAmount.toFixed(2)}</span>
                         </div>
                         <div className="border-t border-slate-300 pt-3">
                           <div className="flex justify-between items-center">
                             <span className="text-lg font-bold text-slate-900">Total</span>
-                            <span className="text-xl font-bold text-purple-600">${invoiceData.total.toFixed(2)}</span>
+                            <span className="text-xl font-bold text-purple-600">{getCurrentCurrencySymbol()}{invoiceData.total.toFixed(2)}</span>
                           </div>
                         </div>
                       </div>
@@ -1014,18 +1247,24 @@ export default function CreateInvoicePage(): JSX.Element {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           )}
 
-          {/* Preview Section */}
-          <div className={`${isPreviewMode ? 'col-span-1' : 'lg:col-span-1'} transition-all duration-500`}>
+          {/* Enhanced Preview Section - Will continue in next message due to size limit */}
+          <motion.div 
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className={`${isPreviewMode ? 'col-span-1' : 'lg:col-span-1'} transition-all duration-500`}
+          >
             <div className="sticky top-32">
-              <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/30 overflow-hidden">
-                {/* Preview Header */}
-                <div className="p-6 bg-amber-50 text-slate-800 border-b border-amber-100">
+              <div className="bg-white/98 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/40 overflow-hidden relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent pointer-events-none"></div>
+                
+                <div className="relative p-6 bg-gradient-to-r from-amber-50 to-orange-50 text-slate-800 border-b border-amber-100/60">
                   <div className="flex items-center justify-between">
                                           <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-amber-100 rounded-2xl flex items-center justify-center">
+                      <div className="w-11 h-11 bg-gradient-to-br from-amber-100 to-orange-100 rounded-2xl flex items-center justify-center shadow-lg">
                           <Eye className="w-5 h-5 text-amber-600" />
                         </div>
                         <div>
@@ -1033,29 +1272,29 @@ export default function CreateInvoicePage(): JSX.Element {
                           <p className="text-sm text-slate-600">Real-time invoice preview</p>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="flex items-center space-x-1">
+                    <div className="flex items-center space-x-3">
+                      <div className="flex items-center space-x-2 bg-white/60 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-sm">
                           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                          <span className="text-xs text-green-600 font-medium">Live</span>
+                        <span className="text-xs text-green-700 font-semibold">Live</span>
                         </div>
-                                              <button
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                           onClick={() => setIsPreviewMode(!isPreviewMode)}
-                          className="p-1.5 bg-amber-100 hover:bg-amber-200 rounded-lg transition-colors"
+                        className="p-2 bg-white/80 hover:bg-white rounded-xl transition-all shadow-sm border border-white/60"
                         >
                           {isPreviewMode ? <Minimize2 className="w-4 h-4 text-slate-600" /> : <Maximize2 className="w-4 h-4 text-slate-600" />}
-                        </button>
+                      </motion.button>
                     </div>
                   </div>
                 </div>
 
-                {/* Preview Content */}
-                <div className="p-4 bg-slate-100">
-                  <div className="bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+                <div className="relative p-5 bg-gradient-to-br from-slate-50 to-slate-100">
+                  <div className="bg-white rounded-2xl shadow-2xl border border-slate-200/60 overflow-hidden relative">
                     <div 
-                      className={`transition-all duration-500 overflow-auto ${
+                      className={`relative transition-all duration-500 overflow-auto ${
                         isPreviewMode ? 'max-h-[800px]' : 'max-h-[700px]'
                       }`}
-                      data-preview-template="true"
                       style={{
                         width: '100%',
                         backgroundColor: '#ffffff'
@@ -1081,53 +1320,76 @@ export default function CreateInvoicePage(): JSX.Element {
                   </div>
                 </div>
 
-                {/* Preview Actions */}
-                <div className="p-4 bg-slate-50/80 backdrop-blur-sm border-t border-slate-200/60">
+                <div className="relative p-5 bg-gradient-to-r from-slate-50/90 to-slate-100/90 backdrop-blur-sm border-t border-slate-200/60">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-3">
+                      <div className="flex items-center space-x-2 bg-white/80 rounded-full px-3 py-1.5 shadow-sm">
                       <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                      <span className="text-xs text-slate-600 font-medium">Auto-updating</span>
+                        <span className="text-xs text-slate-700 font-semibold">Auto-updating</span>
+                      </div>
                     </div>
                     <div className="flex space-x-2">
-                      <button
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={handleDownloadPDF}
                         disabled={isSending}
-                        className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-all text-xs font-medium shadow-sm flex items-center space-x-1"
+                        className="px-3 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-all text-xs font-medium shadow-lg flex items-center space-x-1.5"
                       >
-                        <Download className="w-3 h-3" />
+                        <Download className="w-3.5 h-3.5" />
                         <span>PDF</span>
-                      </button>
-                      <button
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={() => window.print()}
-                        className="px-3 py-1.5 bg-slate-600 text-white rounded-lg hover:bg-slate-700 transition-all text-xs font-medium shadow-sm flex items-center space-x-1"
+                        className="px-3 py-2 bg-slate-600 text-white rounded-xl hover:bg-slate-700 transition-all text-xs font-medium shadow-lg flex items-center space-x-1.5"
                       >
-                        <Printer className="w-3 h-3" />
+                        <Printer className="w-3.5 h-3.5" />
                         <span>Print</span>
-                      </button>
+                      </motion.button>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Quick Stats */}
-              <div className="mt-6 grid grid-cols-2 gap-4">
-                <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-lg">
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.6 }}
+                className="mt-6 grid grid-cols-2 gap-4"
+              >
+                <motion.div 
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  transition={{ duration: 0.2 }}
+                  className="bg-gradient-to-br from-white to-purple-50 rounded-2xl p-5 border border-purple-100 shadow-lg hover:shadow-purple-500/10"
+                >
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-purple-600">${invoiceData.total.toFixed(2)}</div>
-                    <div className="text-xs text-slate-500 font-medium">Total Amount</div>
+                    <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl mx-auto mb-3 flex items-center justify-center">
+                      <DollarSign className="w-5 h-5 text-white" />
                   </div>
+                    <div className="text-2xl font-bold text-purple-600 mb-1">{getCurrentCurrencySymbol()}{invoiceData.total.toFixed(2)}</div>
+                    <div className="text-xs text-slate-600 font-semibold uppercase tracking-wide">Total Amount</div>
                 </div>
-                <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-lg">
+                </motion.div>
+                <motion.div 
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  transition={{ duration: 0.2 }}
+                  className="bg-gradient-to-br from-white to-orange-50 rounded-2xl p-5 border border-orange-100 shadow-lg hover:shadow-orange-500/10"
+                >
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-orange-600">{invoiceData.items.length}</div>
-                    <div className="text-xs text-slate-500 font-medium">Line Items</div>
+                    <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl mx-auto mb-3 flex items-center justify-center">
+                      <Package className="w-5 h-5 text-white" />
                   </div>
+                    <div className="text-2xl font-bold text-orange-600 mb-1">{invoiceData.items.length}</div>
+                    <div className="text-xs text-slate-600 font-semibold uppercase tracking-wide">Line Items</div>
                 </div>
+                </motion.div>
+              </motion.div>
               </div>
+          </motion.div>
             </div>
-          </div>
-        </div>
-      </div>
+      </motion.div>
 
       {/* Hidden Full-Size Template for PDF Generation */}
       <div 
@@ -1194,8 +1456,6 @@ export default function CreateInvoicePage(): JSX.Element {
                   </button>
                 </div>
               </div>
-
-
 
               {/* Chat Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
@@ -1268,8 +1528,6 @@ export default function CreateInvoicePage(): JSX.Element {
 
                 <div ref={aiMessagesEndRef} />
               </div>
-
-
 
               {/* Input Area */}
               <div className="p-4 border-t border-slate-200 bg-white">

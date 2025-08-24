@@ -655,7 +655,7 @@ export const invoiceService = {
       if (error) throw error
 
       if (!data || data.length === 0) {
-        return 'INV-2024-001'
+        return `INV-${new Date().getFullYear()}-001`
       }
 
       const lastInvoice = data[0]
@@ -675,7 +675,7 @@ export const invoiceService = {
         return `INV-${year}-${number.toString().padStart(3, '0')}`
       }
       
-      return 'INV-2024-001'
+      return `INV-${new Date().getFullYear()}-001`
     } catch (error) {
       console.error('Error generating invoice number:', error)
       return `INV-${new Date().getFullYear()}-001`

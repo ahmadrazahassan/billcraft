@@ -1,29 +1,4 @@
-interface InvoiceData {
-  invoiceNumber: string
-  date: string
-  dueDate: string
-  company: {
-    name: string
-    address: string
-    city: string
-    phone: string
-    email: string
-  }
-  client: {
-    name: string
-    address: string
-    city: string
-  }
-  items: Array<{
-    description: string
-    quantity: number
-    rate: number
-    amount: number
-  }>
-  subtotal: number
-  tax: number
-  total: number
-}
+import { InvoiceData, getCurrencySymbol, TemplateLogo } from './template-utils'
 
 interface MinimalBlackTemplateProps {
   data: InvoiceData
@@ -31,6 +6,8 @@ interface MinimalBlackTemplateProps {
 }
 
 export function MinimalBlackTemplate({ data, isPreview = false }: MinimalBlackTemplateProps) {
+  const currencySymbol = getCurrencySymbol(data.currency)
+  
   return (
     <div className="bg-slate-900 text-white p-12 max-w-4xl mx-auto">
       {/* Header */}
@@ -79,11 +56,11 @@ export function MinimalBlackTemplate({ data, isPreview = false }: MinimalBlackTe
                   <h4 className="text-xl font-light text-white mb-3">{item.description}</h4>
                   <div className="flex items-center space-x-8 text-sm text-slate-400">
                     <span>Quantity {item.quantity}</span>
-                    <span>Rate ${item.rate.toFixed(2)}</span>
+                    <span>Rate {currencySymbol}${item.rate.toFixed(2)}</span>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-3xl font-light text-white">${item.amount.toFixed(2)}</p>
+                  <p className="text-3xl font-light text-white">{currencySymbol}${item.amount.toFixed(2)}</p>
                 </div>
               </div>
             </div>
@@ -96,16 +73,16 @@ export function MinimalBlackTemplate({ data, isPreview = false }: MinimalBlackTe
         <div className="w-96 space-y-6">
           <div className="flex justify-between items-center py-3 text-slate-300">
             <span className="tracking-wide">Subtotal</span>
-            <span className="font-light">${data.subtotal.toFixed(2)}</span>
+            <span className="font-light">{currencySymbol}${data.subtotal.toFixed(2)}</span>
           </div>
           <div className="flex justify-between items-center py-3 text-slate-300">
             <span className="tracking-wide">Tax</span>
-            <span className="font-light">${data.tax.toFixed(2)}</span>
+            <span className="font-light">{currencySymbol}${data.tax.toFixed(2)}</span>
           </div>
           <div className="w-full h-px bg-white"></div>
           <div className="flex justify-between items-center py-6">
             <span className="text-2xl font-light text-white tracking-wide">Total</span>
-            <span className="text-4xl font-thin text-white">${data.total.toFixed(2)}</span>
+            <span className="text-4xl font-thin text-white">{currencySymbol}${data.total.toFixed(2)}</span>
           </div>
         </div>
       </div>

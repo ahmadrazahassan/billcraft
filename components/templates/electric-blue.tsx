@@ -1,33 +1,5 @@
 import { Zap, Power, Battery, Cpu, Wifi } from 'lucide-react'
-
-interface InvoiceData {
-  invoiceNumber: string
-  date: string
-  dueDate: string
-  company: {
-    name: string
-    address: string
-    city: string
-    phone: string
-    email: string
-  }
-  client: {
-    name: string
-    address: string
-    city: string
-  }
-  items: Array<{
-    description: string
-    quantity: number
-    rate: number
-    amount: number
-  }>
-  subtotal: number
-  tax: number
-  total: number
-  notes?: string
-  terms?: string
-}
+import { InvoiceData, getCurrencySymbol, TemplateLogo } from './template-utils'
 
 interface ElectricBlueTemplateProps {
   data: InvoiceData
@@ -35,6 +7,8 @@ interface ElectricBlueTemplateProps {
 }
 
 export function ElectricBlueTemplate({ data, isPreview = false }: ElectricBlueTemplateProps) {
+  const currencySymbol = getCurrencySymbol(data.currency)
+  
   return (
     <div className="bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 p-8 max-w-4xl mx-auto relative overflow-hidden min-h-screen">
       {/* Electric Effects */}
@@ -159,13 +133,13 @@ export function ElectricBlueTemplate({ data, isPreview = false }: ElectricBlueTe
                           Qty: {item.quantity}
                         </span>
                         <span className="text-blue-300 font-medium bg-blue-800/50 px-3 py-1 rounded-full border border-blue-400/30">
-                          Rate: ${item.rate.toFixed(2)}
+                          Rate: {currencySymbol}${item.rate.toFixed(2)}
                         </span>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-cyan-300">
-                        ${item.amount.toFixed(2)}
+                        {currencySymbol}${item.amount.toFixed(2)}
                       </p>
                     </div>
                   </div>
@@ -183,11 +157,11 @@ export function ElectricBlueTemplate({ data, isPreview = false }: ElectricBlueTe
             <div className="w-96 space-y-4">
               <div className="flex justify-between items-center py-3 border-b border-blue-400/30">
                 <span className="text-blue-300 font-medium">Subtotal</span>
-                <span className="text-xl font-bold text-blue-200">${data.subtotal.toFixed(2)}</span>
+                <span className="text-xl font-bold text-blue-200">{currencySymbol}${data.subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center py-3 border-b border-cyan-400/30">
                 <span className="text-cyan-300 font-medium">Tax</span>
-                <span className="text-xl font-bold text-blue-200">${data.tax.toFixed(2)}</span>
+                <span className="text-xl font-bold text-blue-200">{currencySymbol}${data.tax.toFixed(2)}</span>
               </div>
               <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg p-4 shadow-xl">
                 <div className="flex justify-between items-center">
@@ -195,7 +169,7 @@ export function ElectricBlueTemplate({ data, isPreview = false }: ElectricBlueTe
                     <Zap className="h-5 w-5 mr-2" />
                     Total Power
                   </span>
-                  <span className="text-3xl font-black text-white">${data.total.toFixed(2)}</span>
+                  <span className="text-3xl font-black text-white">{currencySymbol}${data.total.toFixed(2)}</span>
                 </div>
               </div>
             </div>

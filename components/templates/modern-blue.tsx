@@ -4,17 +4,21 @@ interface InvoiceData {
   invoiceNumber: string
   date: string
   dueDate: string
+  currency: string
   company: {
     name: string
     address: string
     city: string
     phone: string
     email: string
+    website?: string
+    logo?: string
   }
   client: {
     name: string
     address: string
     city: string
+    email: string
   }
   items: Array<{
     description: string
@@ -29,19 +33,43 @@ interface InvoiceData {
   terms?: string
 }
 
+// Currency symbol helper
+const getCurrencySymbol = (currencyCode: string): string => {
+  const currencyMap: { [key: string]: string } = {
+    'USD': '$',
+    'EUR': '€',
+    'PKR': '₨',
+    'INR': '₹',
+  }
+  return currencyMap[currencyCode] || '$'
+}
+
 interface ModernBlueTemplateProps {
   data: InvoiceData
   isPreview?: boolean
 }
 
 export function ModernBlueTemplate({ data, isPreview = false }: ModernBlueTemplateProps) {
+  const currencySymbol = getCurrencySymbol(data.currency)
+  
   return (
     <div className="bg-white p-8 max-w-4xl mx-auto shadow-sm">
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div className="flex items-center space-x-4">
-          <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center">
-            <FileText className="h-8 w-8 text-white" />
+          <div className="w-16 h-16 flex items-center justify-center overflow-hidden">
+            {data.company.logo ? (
+              <img 
+                src={data.company.logo} 
+                alt={`${data.company.name} logo`}
+                className="w-full h-full object-contain"
+                style={{ maxWidth: '100%', maxHeight: '100%', backgroundColor: 'transparent' }}
+              />
+            ) : (
+              <div className="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center">
+                <FileText className="h-8 w-8 text-white" />
+              </div>
+            )}
           </div>
           <div>
             <h1 className="text-3xl font-bold text-slate-900">{data.company.name}</h1>
@@ -72,7 +100,7 @@ export function ModernBlueTemplate({ data, isPreview = false }: ModernBlueTempla
           </div>
           <div className="flex items-center space-x-3">
             <Calendar className="h-5 w-5 text-blue-600" />
-            <span className="text-slate-700">Est. 2024</span>
+            <span className="text-slate-700">Est. 2025</span>
           </div>
         </div>
       </div>
@@ -106,8 +134,8 @@ export function ModernBlueTemplate({ data, isPreview = false }: ModernBlueTempla
                 <tr key={index} className="hover:bg-slate-50">
                   <td className="px-6 py-4 text-slate-900">{item.description}</td>
                   <td className="px-6 py-4 text-center text-slate-600">{item.quantity}</td>
-                  <td className="px-6 py-4 text-right text-slate-600">${item.rate.toFixed(2)}</td>
-                  <td className="px-6 py-4 text-right font-semibold text-slate-900">${item.amount.toFixed(2)}</td>
+                  <td className="px-6 py-4 text-right text-slate-600">{currencySymbol}{item.rate.toFixed(2)}</td>
+                  <td className="px-6 py-4 text-right font-semibold text-slate-900">{currencySymbol}{item.amount.toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>
@@ -121,16 +149,16 @@ export function ModernBlueTemplate({ data, isPreview = false }: ModernBlueTempla
           <div className="space-y-3">
             <div className="flex justify-between items-center py-2">
               <span className="text-slate-600">Subtotal</span>
-              <span className="font-semibold text-slate-900">${data.subtotal.toFixed(2)}</span>
+              <span className="font-semibold text-slate-900">{currencySymbol}{data.subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between items-center py-2">
               <span className="text-slate-600">Tax</span>
-              <span className="font-semibold text-slate-900">${data.tax.toFixed(2)}</span>
+              <span className="font-semibold text-slate-900">{currencySymbol}{data.tax.toFixed(2)}</span>
             </div>
             <div className="border-t-2 border-blue-600 pt-3">
               <div className="flex justify-between items-center">
                 <span className="text-xl font-bold text-slate-900">Total</span>
-                <span className="text-2xl font-bold text-blue-600">${data.total.toFixed(2)}</span>
+                <span className="text-2xl font-bold text-blue-600">{currencySymbol}{data.total.toFixed(2)}</span>
               </div>
             </div>
           </div>

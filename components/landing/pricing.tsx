@@ -38,7 +38,7 @@ const pricingPlans = [
     yearlyPrice: 8, // 20% discount for yearly
     period: 'per month',
     description: 'Everything you need to scale your business with advanced automation. Includes 3-month free trial.',
-    icon: Star,
+    icon: Zap,
     iconColor: 'text-orange-500',
     glassColor: 'from-orange-500/15 to-orange-600/10',
     features: [

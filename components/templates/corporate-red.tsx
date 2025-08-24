@@ -1,31 +1,5 @@
 import { Shield, Target, Award, Briefcase } from 'lucide-react'
-
-interface InvoiceData {
-  invoiceNumber: string
-  date: string
-  dueDate: string
-  company: {
-    name: string
-    address: string
-    city: string
-    phone: string
-    email: string
-  }
-  client: {
-    name: string
-    address: string
-    city: string
-  }
-  items: Array<{
-    description: string
-    quantity: number
-    rate: number
-    amount: number
-  }>
-  subtotal: number
-  tax: number
-  total: number
-}
+import { InvoiceData, getCurrencySymbol, TemplateLogo } from './template-utils'
 
 interface CorporateRedTemplateProps {
   data: InvoiceData
@@ -33,6 +7,8 @@ interface CorporateRedTemplateProps {
 }
 
 export function CorporateRedTemplate({ data, isPreview = false }: CorporateRedTemplateProps) {
+  const currencySymbol = getCurrencySymbol(data.currency)
+  
   return (
     <div className="bg-white max-w-4xl mx-auto">
       {/* Header */}
@@ -181,8 +157,8 @@ export function CorporateRedTemplate({ data, isPreview = false }: CorporateRedTe
                     {item.quantity}
                   </span>
                 </div>
-                <div className="col-span-2 text-right text-slate-600 font-semibold">${item.rate.toFixed(2)}</div>
-                <div className="col-span-2 text-right font-bold text-slate-900 text-lg">${item.amount.toFixed(2)}</div>
+                <div className="col-span-2 text-right text-slate-600 font-semibold">{currencySymbol}${item.rate.toFixed(2)}</div>
+                <div className="col-span-2 text-right font-bold text-slate-900 text-lg">{currencySymbol}${item.amount.toFixed(2)}</div>
               </div>
             ))}
           </div>
@@ -195,16 +171,16 @@ export function CorporateRedTemplate({ data, isPreview = false }: CorporateRedTe
               <div className="space-y-4">
                 <div className="flex justify-between items-center py-2">
                   <span className="font-semibold text-slate-700">Subtotal</span>
-                  <span className="font-bold text-slate-900">${data.subtotal.toFixed(2)}</span>
+                  <span className="font-bold text-slate-900">{currencySymbol}${data.subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center py-2">
                   <span className="font-semibold text-slate-700">Tax (10%)</span>
-                  <span className="font-bold text-slate-900">${data.tax.toFixed(2)}</span>
+                  <span className="font-bold text-slate-900">{currencySymbol}${data.tax.toFixed(2)}</span>
                 </div>
                 <div className="border-t-2 border-red-600 pt-4">
                   <div className="flex justify-between items-center">
                     <span className="text-2xl font-bold text-slate-900">TOTAL DUE</span>
-                    <span className="text-3xl font-bold text-red-600">${data.total.toFixed(2)}</span>
+                    <span className="text-3xl font-bold text-red-600">{currencySymbol}${data.total.toFixed(2)}</span>
                   </div>
                 </div>
               </div>

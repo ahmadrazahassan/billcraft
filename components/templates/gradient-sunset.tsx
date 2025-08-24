@@ -1,33 +1,5 @@
 import { Sun, Calendar, Phone, Mail, MapPin, Star, Sparkles } from 'lucide-react'
-
-interface InvoiceData {
-  invoiceNumber: string
-  date: string
-  dueDate: string
-  company: {
-    name: string
-    address: string
-    city: string
-    phone: string
-    email: string
-  }
-  client: {
-    name: string
-    address: string
-    city: string
-  }
-  items: Array<{
-    description: string
-    quantity: number
-    rate: number
-    amount: number
-  }>
-  subtotal: number
-  tax: number
-  total: number
-  notes?: string
-  terms?: string
-}
+import { InvoiceData, getCurrencySymbol, TemplateLogo } from './template-utils'
 
 interface GradientSunsetTemplateProps {
   data: InvoiceData
@@ -35,6 +7,8 @@ interface GradientSunsetTemplateProps {
 }
 
 export function GradientSunsetTemplate({ data, isPreview = false }: GradientSunsetTemplateProps) {
+  const currencySymbol = getCurrencySymbol(data.currency)
+  
   return (
     <div className="bg-gradient-to-br from-orange-50 via-pink-50 to-purple-50 p-8 max-w-4xl mx-auto relative overflow-hidden min-h-screen">
       {/* Decorative Background */}
@@ -137,12 +111,12 @@ export function GradientSunsetTemplate({ data, isPreview = false }: GradientSuns
                         <span className="bg-gradient-to-r from-orange-500 to-pink-500 text-white px-3 py-1 rounded-full font-bold">
                           Qty: {item.quantity}
                         </span>
-                        <span className="text-slate-600 font-medium">Rate: ${item.rate.toFixed(2)}</span>
+                        <span className="text-slate-600 font-medium">Rate: {currencySymbol}${item.rate.toFixed(2)}</span>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="text-2xl font-black bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent">
-                        ${item.amount.toFixed(2)}
+                        {currencySymbol}${item.amount.toFixed(2)}
                       </p>
                     </div>
                   </div>
@@ -160,16 +134,16 @@ export function GradientSunsetTemplate({ data, isPreview = false }: GradientSuns
             <div className="w-96 space-y-4">
               <div className="flex justify-between items-center py-3 border-b border-orange-200">
                 <span className="text-slate-600 font-medium">Subtotal</span>
-                <span className="text-xl font-bold text-slate-900">${data.subtotal.toFixed(2)}</span>
+                <span className="text-xl font-bold text-slate-900">{currencySymbol}${data.subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center py-3 border-b border-orange-200">
                 <span className="text-slate-600 font-medium">Tax</span>
-                <span className="text-xl font-bold text-slate-900">${data.tax.toFixed(2)}</span>
+                <span className="text-xl font-bold text-slate-900">{currencySymbol}${data.tax.toFixed(2)}</span>
               </div>
               <div className="bg-gradient-to-r from-orange-500 to-pink-500 rounded-xl p-4">
                 <div className="flex justify-between items-center">
                   <span className="text-xl font-bold text-white">Total Amount</span>
-                  <span className="text-3xl font-black text-white">${data.total.toFixed(2)}</span>
+                  <span className="text-3xl font-black text-white">{currencySymbol}${data.total.toFixed(2)}</span>
                 </div>
               </div>
             </div>

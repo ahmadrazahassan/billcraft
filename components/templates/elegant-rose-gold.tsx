@@ -1,33 +1,5 @@
 import { Crown, Heart, Diamond, Star, Flower, Gift, Phone, Mail } from 'lucide-react'
-
-interface InvoiceData {
-  invoiceNumber: string
-  date: string
-  dueDate: string
-  company: {
-    name: string
-    address: string
-    city: string
-    phone: string
-    email: string
-  }
-  client: {
-    name: string
-    address: string
-    city: string
-  }
-  items: Array<{
-    description: string
-    quantity: number
-    rate: number
-    amount: number
-  }>
-  subtotal: number
-  tax: number
-  total: number
-  notes?: string
-  terms?: string
-}
+import { InvoiceData, getCurrencySymbol, TemplateLogo } from './template-utils'
 
 interface ElegantRoseGoldTemplateProps {
   data: InvoiceData
@@ -35,6 +7,8 @@ interface ElegantRoseGoldTemplateProps {
 }
 
 export function ElegantRoseGoldTemplate({ data, isPreview = false }: ElegantRoseGoldTemplateProps) {
+  const currencySymbol = getCurrencySymbol(data.currency)
+  
   return (
     <div className="bg-gradient-to-br from-rose-50 via-pink-50 to-amber-50 p-8 max-w-4xl mx-auto relative overflow-hidden min-h-screen">
       {/* Elegant Background Elements */}
@@ -148,13 +122,13 @@ export function ElegantRoseGoldTemplate({ data, isPreview = false }: ElegantRose
                           Quantity: {item.quantity}
                         </span>
                         <span className="text-slate-600 font-semibold bg-white px-4 py-2 rounded-full border border-rose-200">
-                          Rate: ${item.rate.toFixed(2)}
+                          Rate: {currencySymbol}${item.rate.toFixed(2)}
                         </span>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-600 via-pink-600 to-amber-600">
-                        ${item.amount.toFixed(2)}
+                        {currencySymbol}${item.amount.toFixed(2)}
                       </p>
                     </div>
                   </div>
@@ -172,11 +146,11 @@ export function ElegantRoseGoldTemplate({ data, isPreview = false }: ElegantRose
             <div className="w-full max-w-lg space-y-6">
               <div className="flex justify-between items-center py-4 border-b-2 border-rose-200">
                 <span className="text-lg text-slate-600 font-semibold">Subtotal</span>
-                <span className="text-2xl font-bold text-slate-900">${data.subtotal.toFixed(2)}</span>
+                <span className="text-2xl font-bold text-slate-900">{currencySymbol}${data.subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center py-4 border-b-2 border-pink-200">
                 <span className="text-lg text-slate-600 font-semibold">Tax</span>
-                <span className="text-2xl font-bold text-slate-900">${data.tax.toFixed(2)}</span>
+                <span className="text-2xl font-bold text-slate-900">{currencySymbol}${data.tax.toFixed(2)}</span>
               </div>
               <div className="bg-gradient-to-r from-rose-500 via-pink-500 to-amber-500 rounded-2xl p-6 shadow-xl">
                 <div className="flex justify-between items-center">
@@ -185,7 +159,7 @@ export function ElegantRoseGoldTemplate({ data, isPreview = false }: ElegantRose
                     Total Amount
                   </span>
                   <span className="text-4xl font-black text-white">
-                    ${data.total.toFixed(2)}
+                    {currencySymbol}${data.total.toFixed(2)}
                   </span>
                 </div>
               </div>

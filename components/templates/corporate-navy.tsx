@@ -1,31 +1,5 @@
 import { Building2, Phone, Mail, Globe, Award } from 'lucide-react'
-
-interface InvoiceData {
-  invoiceNumber: string
-  date: string
-  dueDate: string
-  company: {
-    name: string
-    address: string
-    city: string
-    phone: string
-    email: string
-  }
-  client: {
-    name: string
-    address: string
-    city: string
-  }
-  items: Array<{
-    description: string
-    quantity: number
-    rate: number
-    amount: number
-  }>
-  subtotal: number
-  tax: number
-  total: number
-}
+import { InvoiceData, getCurrencySymbol, TemplateLogo } from './template-utils'
 
 interface CorporateNavyTemplateProps {
   data: InvoiceData
@@ -33,15 +7,20 @@ interface CorporateNavyTemplateProps {
 }
 
 export function CorporateNavyTemplate({ data, isPreview = false }: CorporateNavyTemplateProps) {
+  const currencySymbol = getCurrencySymbol(data.currency)
+  
   return (
     <div className="bg-white max-w-4xl mx-auto">
       {/* Header */}
       <div className="bg-slate-900 text-white p-8">
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center">
-              <Building2 className="h-8 w-8 text-slate-900" />
-            </div>
+            <TemplateLogo 
+              logo={data.company.logo}
+              companyName={data.company.name}
+              fallbackIcon={<div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center"><Building2 className="h-8 w-8 text-slate-900" /></div>}
+              size="lg"
+            />
             <div>
               <h1 className="text-3xl font-bold">{data.company.name}</h1>
               <p className="text-slate-300">Professional Services</p>
@@ -149,8 +128,8 @@ export function CorporateNavyTemplate({ data, isPreview = false }: CorporateNavy
                   <p className="font-semibold text-slate-900">{item.description}</p>
                 </div>
                 <div className="col-span-2 text-center text-slate-600">{item.quantity}</div>
-                <div className="col-span-2 text-right text-slate-600">${item.rate.toFixed(2)}</div>
-                <div className="col-span-2 text-right font-bold text-slate-900">${item.amount.toFixed(2)}</div>
+                <div className="col-span-2 text-right text-slate-600">{currencySymbol}{item.rate.toFixed(2)}</div>
+                <div className="col-span-2 text-right font-bold text-slate-900">{currencySymbol}{item.amount.toFixed(2)}</div>
               </div>
             ))}
           </div>
@@ -163,16 +142,16 @@ export function CorporateNavyTemplate({ data, isPreview = false }: CorporateNavy
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-slate-600">Subtotal</span>
-                  <span className="font-semibold text-slate-900">${data.subtotal.toFixed(2)}</span>
+                  <span className="font-semibold text-slate-900">{currencySymbol}{data.subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-slate-600">Tax (10%)</span>
-                  <span className="font-semibold text-slate-900">${data.tax.toFixed(2)}</span>
+                  <span className="font-semibold text-slate-900">{currencySymbol}{data.tax.toFixed(2)}</span>
                 </div>
                 <div className="border-t border-slate-200 pt-3">
                   <div className="flex justify-between items-center">
                     <span className="text-xl font-bold text-slate-900">Total Due</span>
-                    <span className="text-2xl font-bold text-slate-900">${data.total.toFixed(2)}</span>
+                    <span className="text-2xl font-bold text-slate-900">{currencySymbol}{data.total.toFixed(2)}</span>
                   </div>
                 </div>
               </div>

@@ -318,7 +318,7 @@ export default function BillingPage() {
                 {upgradeLoading === 'professional' ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 ) : (
-                  <ArrowUpRight className="h-4 w-4 mr-2" />
+                <ArrowUpRight className="h-4 w-4 mr-2" />
                 )}
                 Upgrade Now
               </Button>
@@ -388,7 +388,7 @@ export default function BillingPage() {
                         {upgradeLoading === 'professional' ? (
                           <Loader2 className="h-5 w-5 mr-2 animate-spin" />
                         ) : (
-                          <Crown className="h-5 w-5 mr-2" />
+                        <Crown className="h-5 w-5 mr-2" />
                         )}
                         Upgrade to Professional
                       </Button>

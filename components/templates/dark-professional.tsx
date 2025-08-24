@@ -1,33 +1,5 @@
 import { Shield, Building, Award, Lock, Target, CheckCircle } from 'lucide-react'
-
-interface InvoiceData {
-  invoiceNumber: string
-  date: string
-  dueDate: string
-  company: {
-    name: string
-    address: string
-    city: string
-    phone: string
-    email: string
-  }
-  client: {
-    name: string
-    address: string
-    city: string
-  }
-  items: Array<{
-    description: string
-    quantity: number
-    rate: number
-    amount: number
-  }>
-  subtotal: number
-  tax: number
-  total: number
-  notes?: string
-  terms?: string
-}
+import { InvoiceData, getCurrencySymbol, TemplateLogo } from './template-utils'
 
 interface DarkProfessionalTemplateProps {
   data: InvoiceData
@@ -35,6 +7,8 @@ interface DarkProfessionalTemplateProps {
 }
 
 export function DarkProfessionalTemplate({ data, isPreview = false }: DarkProfessionalTemplateProps) {
+  const currencySymbol = getCurrencySymbol(data.currency)
+  
   return (
     <div className="bg-slate-900 p-8 max-w-4xl mx-auto relative overflow-hidden min-h-screen">
       {/* Subtle Professional Background */}
@@ -139,8 +113,8 @@ export function DarkProfessionalTemplate({ data, isPreview = false }: DarkProfes
                   <tr key={index} className="hover:bg-slate-700/20">
                     <td className="px-6 py-4 text-white font-medium">{item.description}</td>
                     <td className="px-6 py-4 text-center text-slate-300">{item.quantity}</td>
-                    <td className="px-6 py-4 text-right text-slate-300">${item.rate.toFixed(2)}</td>
-                    <td className="px-6 py-4 text-right font-bold text-blue-400">${item.amount.toFixed(2)}</td>
+                    <td className="px-6 py-4 text-right text-slate-300">{currencySymbol}${item.rate.toFixed(2)}</td>
+                    <td className="px-6 py-4 text-right font-bold text-blue-400">{currencySymbol}${item.amount.toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -156,16 +130,16 @@ export function DarkProfessionalTemplate({ data, isPreview = false }: DarkProfes
             <div className="w-80 space-y-4">
               <div className="flex justify-between items-center py-3 border-b border-slate-700/40">
                 <span className="text-slate-400 font-medium">Subtotal</span>
-                <span className="text-xl font-bold text-white">${data.subtotal.toFixed(2)}</span>
+                <span className="text-xl font-bold text-white">{currencySymbol}${data.subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center py-3 border-b border-slate-700/40">
                 <span className="text-slate-400 font-medium">Tax</span>
-                <span className="text-xl font-bold text-white">${data.tax.toFixed(2)}</span>
+                <span className="text-xl font-bold text-white">{currencySymbol}${data.tax.toFixed(2)}</span>
               </div>
               <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl p-4">
                 <div className="flex justify-between items-center">
                   <span className="text-xl font-bold text-white">Total Amount</span>
-                  <span className="text-3xl font-bold text-white">${data.total.toFixed(2)}</span>
+                  <span className="text-3xl font-bold text-white">{currencySymbol}${data.total.toFixed(2)}</span>
                 </div>
               </div>
             </div>

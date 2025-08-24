@@ -1,33 +1,5 @@
 import { Crown, Award, Diamond, Star, Trophy, Medal, Phone, Mail } from 'lucide-react'
-
-interface InvoiceData {
-  invoiceNumber: string
-  date: string
-  dueDate: string
-  company: {
-    name: string
-    address: string
-    city: string
-    phone: string
-    email: string
-  }
-  client: {
-    name: string
-    address: string
-    city: string
-  }
-  items: Array<{
-    description: string
-    quantity: number
-    rate: number
-    amount: number
-  }>
-  subtotal: number
-  tax: number
-  total: number
-  notes?: string
-  terms?: string
-}
+import { InvoiceData, getCurrencySymbol, TemplateLogo } from './template-utils'
 
 interface PlatinumEliteTemplateProps {
   data: InvoiceData
@@ -35,6 +7,8 @@ interface PlatinumEliteTemplateProps {
 }
 
 export function PlatinumEliteTemplate({ data, isPreview = false }: PlatinumEliteTemplateProps) {
+  const currencySymbol = getCurrencySymbol(data.currency)
+  
   return (
     <div className="bg-gradient-to-br from-slate-50 via-zinc-50 to-stone-50 p-8 max-w-4xl mx-auto relative overflow-hidden min-h-screen">
       {/* Platinum Background Elements */}
@@ -153,13 +127,13 @@ export function PlatinumEliteTemplate({ data, isPreview = false }: PlatinumElite
                           Quantity: {item.quantity}
                         </span>
                         <span className="text-slate-600 font-black bg-white px-6 py-3 rounded-2xl border-2 border-slate-200 text-lg">
-                          Rate: ${item.rate.toFixed(2)}
+                          Rate: {currencySymbol}${item.rate.toFixed(2)}
                         </span>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-slate-700 via-zinc-700 to-stone-700">
-                        ${item.amount.toFixed(2)}
+                        {currencySymbol}${item.amount.toFixed(2)}
                       </p>
                     </div>
                   </div>
@@ -177,11 +151,11 @@ export function PlatinumEliteTemplate({ data, isPreview = false }: PlatinumElite
             <div className="w-full max-w-2xl space-y-8">
               <div className="flex justify-between items-center py-6 border-b-2 border-slate-300">
                 <span className="text-2xl text-slate-600 font-black">Subtotal</span>
-                <span className="text-3xl font-black text-slate-900">${data.subtotal.toFixed(2)}</span>
+                <span className="text-3xl font-black text-slate-900">{currencySymbol}${data.subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center py-6 border-b-2 border-zinc-300">
                 <span className="text-2xl text-slate-600 font-black">Tax</span>
-                <span className="text-3xl font-black text-slate-900">${data.tax.toFixed(2)}</span>
+                <span className="text-3xl font-black text-slate-900">{currencySymbol}${data.tax.toFixed(2)}</span>
               </div>
               <div className="bg-gradient-to-r from-slate-600 via-zinc-600 to-stone-600 rounded-3xl p-8 shadow-2xl">
                 <div className="flex justify-between items-center">
@@ -190,7 +164,7 @@ export function PlatinumEliteTemplate({ data, isPreview = false }: PlatinumElite
                     Total Amount
                   </span>
                   <span className="text-5xl font-black text-white">
-                    ${data.total.toFixed(2)}
+                    {currencySymbol}${data.total.toFixed(2)}
                   </span>
                 </div>
               </div>

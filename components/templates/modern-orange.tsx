@@ -1,31 +1,5 @@
 import { Zap, Circle, Triangle, Square } from 'lucide-react'
-
-interface InvoiceData {
-  invoiceNumber: string
-  date: string
-  dueDate: string
-  company: {
-    name: string
-    address: string
-    city: string
-    phone: string
-    email: string
-  }
-  client: {
-    name: string
-    address: string
-    city: string
-  }
-  items: Array<{
-    description: string
-    quantity: number
-    rate: number
-    amount: number
-  }>
-  subtotal: number
-  tax: number
-  total: number
-}
+import { InvoiceData, getCurrencySymbol, TemplateLogo } from './template-utils'
 
 interface ModernOrangeTemplateProps {
   data: InvoiceData
@@ -33,6 +7,8 @@ interface ModernOrangeTemplateProps {
 }
 
 export function ModernOrangeTemplate({ data, isPreview = false }: ModernOrangeTemplateProps) {
+  const currencySymbol = getCurrencySymbol(data.currency)
+  
   return (
     <div className="bg-white p-8 max-w-4xl mx-auto relative">
       {/* Geometric Background Elements */}

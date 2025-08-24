@@ -1,33 +1,5 @@
 import { Zap, Code, Terminal, Cpu, Shield, Wifi } from 'lucide-react'
-
-interface InvoiceData {
-  invoiceNumber: string
-  date: string
-  dueDate: string
-  company: {
-    name: string
-    address: string
-    city: string
-    phone: string
-    email: string
-  }
-  client: {
-    name: string
-    address: string
-    city: string
-  }
-  items: Array<{
-    description: string
-    quantity: number
-    rate: number
-    amount: number
-  }>
-  subtotal: number
-  tax: number
-  total: number
-  notes?: string
-  terms?: string
-}
+import { InvoiceData, getCurrencySymbol, TemplateLogo } from './template-utils'
 
 interface NeonCyberTemplateProps {
   data: InvoiceData
@@ -35,6 +7,8 @@ interface NeonCyberTemplateProps {
 }
 
 export function NeonCyberTemplate({ data, isPreview = false }: NeonCyberTemplateProps) {
+  const currencySymbol = getCurrencySymbol(data.currency)
+  
   return (
     <div className="bg-slate-900 p-8 max-w-4xl mx-auto relative overflow-hidden min-h-screen">
       {/* Neon Grid Background */}
@@ -147,12 +121,12 @@ export function NeonCyberTemplate({ data, isPreview = false }: NeonCyberTemplate
                         <span className="bg-gradient-to-r from-cyan-500 to-purple-500 text-white px-3 py-1 rounded-full font-bold">
                           QTY: {item.quantity}
                         </span>
-                        <span className="text-purple-300">RATE: ${item.rate.toFixed(2)}</span>
+                        <span className="text-purple-300">RATE: {currencySymbol}${item.rate.toFixed(2)}</span>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-pink-400 font-mono">
-                        ${item.amount.toFixed(2)}
+                        {currencySymbol}${item.amount.toFixed(2)}
                       </p>
                     </div>
                   </div>
@@ -170,17 +144,17 @@ export function NeonCyberTemplate({ data, isPreview = false }: NeonCyberTemplate
             <div className="w-96 space-y-4 font-mono">
               <div className="flex justify-between items-center py-3 border-b border-cyan-500/30">
                 <span className="text-cyan-300 tracking-wide">SUBTOTAL:</span>
-                <span className="text-xl font-bold text-white">${data.subtotal.toFixed(2)}</span>
+                <span className="text-xl font-bold text-white">{currencySymbol}${data.subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center py-3 border-b border-purple-500/30">
                 <span className="text-purple-300 tracking-wide">TAX_CALC:</span>
-                <span className="text-xl font-bold text-white">${data.tax.toFixed(2)}</span>
+                <span className="text-xl font-bold text-white">{currencySymbol}${data.tax.toFixed(2)}</span>
               </div>
               <div className="bg-gradient-to-r from-cyan-500/20 to-purple-500/20 backdrop-blur-sm rounded-lg p-4 border border-cyan-400/40">
                 <div className="flex justify-between items-center">
                   <span className="text-xl font-bold text-cyan-400 tracking-wider">TOTAL_AMOUNT:</span>
                   <span className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-pink-400">
-                    ${data.total.toFixed(2)}
+                    {currencySymbol}${data.total.toFixed(2)}
                   </span>
                 </div>
               </div>

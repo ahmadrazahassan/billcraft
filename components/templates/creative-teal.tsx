@@ -1,31 +1,5 @@
 import { Waves, Droplet, Sun, Wind } from 'lucide-react'
-
-interface InvoiceData {
-  invoiceNumber: string
-  date: string
-  dueDate: string
-  company: {
-    name: string
-    address: string
-    city: string
-    phone: string
-    email: string
-  }
-  client: {
-    name: string
-    address: string
-    city: string
-  }
-  items: Array<{
-    description: string
-    quantity: number
-    rate: number
-    amount: number
-  }>
-  subtotal: number
-  tax: number
-  total: number
-}
+import { InvoiceData, getCurrencySymbol, TemplateLogo } from './template-utils'
 
 interface CreativeTealTemplateProps {
   data: InvoiceData
@@ -33,6 +7,8 @@ interface CreativeTealTemplateProps {
 }
 
 export function CreativeTealTemplate({ data, isPreview = false }: CreativeTealTemplateProps) {
+  const currencySymbol = getCurrencySymbol(data.currency)
+  
   return (
     <div className="bg-white p-8 max-w-4xl mx-auto relative overflow-hidden">
       {/* Flowing Background Elements */}
@@ -159,12 +135,12 @@ export function CreativeTealTemplate({ data, isPreview = false }: CreativeTealTe
                         Quantity: {item.quantity}
                       </div>
                       <div className="text-slate-600">
-                        Rate: ${item.rate.toFixed(2)}
+                        Rate: {currencySymbol}${item.rate.toFixed(2)}
                       </div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-3xl font-bold text-teal-500">${item.amount.toFixed(2)}</p>
+                    <p className="text-3xl font-bold text-teal-500">{currencySymbol}${item.amount.toFixed(2)}</p>
                   </div>
                 </div>
               </div>
@@ -188,16 +164,16 @@ export function CreativeTealTemplate({ data, isPreview = false }: CreativeTealTe
               <div className="space-y-4">
                 <div className="flex justify-between items-center py-2">
                   <span className="text-slate-600 font-semibold">Subtotal</span>
-                  <span className="font-bold text-slate-900">${data.subtotal.toFixed(2)}</span>
+                  <span className="font-bold text-slate-900">{currencySymbol}${data.subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between items-center py-2">
                   <span className="text-slate-600 font-semibold">Tax</span>
-                  <span className="font-bold text-slate-900">${data.tax.toFixed(2)}</span>
+                  <span className="font-bold text-slate-900">{currencySymbol}${data.tax.toFixed(2)}</span>
                 </div>
                 <div className="border-t-2 border-teal-400 pt-4">
                   <div className="flex justify-between items-center">
                     <span className="text-2xl font-bold text-slate-900">Total Flow</span>
-                    <span className="text-4xl font-bold text-teal-500">${data.total.toFixed(2)}</span>
+                    <span className="text-4xl font-bold text-teal-500">{currencySymbol}${data.total.toFixed(2)}</span>
                   </div>
                 </div>
               </div>

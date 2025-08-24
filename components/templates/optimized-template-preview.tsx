@@ -59,7 +59,7 @@ const templateComponents = {
 
 interface OptimizedTemplatePreviewProps {
   templateId: string
-  size?: 'small' | 'medium' | 'large'
+  size?: 'small' | 'medium' | 'large' | 'dashboard'
   className?: string
 }
 
@@ -77,6 +77,15 @@ export function OptimizedTemplatePreview({
   size = 'medium',
   className = '' 
 }: OptimizedTemplatePreviewProps) {
+  // Early validation to prevent null/undefined issues
+  if (!templateId) {
+    return (
+      <div className={`w-full h-full bg-slate-100 rounded-lg flex items-center justify-center ${className}`}>
+        <div className="text-slate-400 text-sm font-medium">No template ID provided</div>
+      </div>
+    )
+  }
+
   const TemplateComponent = templateComponents[templateId as keyof typeof templateComponents]
   
   if (!TemplateComponent) {
@@ -89,46 +98,55 @@ export function OptimizedTemplatePreview({
   
   const sampleData = generateSampleData(templateId)
   
-  // Size configurations for different use cases - MUCH LARGER and better centered
+  // Size configurations for different use cases - Optimized for perfect dashboard coverage
   const sizeConfigs = {
     small: {
-      scale: 0.55,
-      containerWidth: 500,
-      containerHeight: 650,
-      aspectRatio: 'aspect-[5/6]' // Taller for better template visibility
+      scale: 0.45,
+      containerWidth: 480,
+      containerHeight: 620,
+      aspectRatio: 'aspect-[4/5]' // Perfect for small previews
     },
     medium: {
+      scale: 0.55,
+      containerWidth: 520,
+      containerHeight: 680,
+      aspectRatio: 'aspect-[4/5]' // Perfect for medium previews
+    },
+    large: {
       scale: 0.65,
       containerWidth: 580,
       containerHeight: 750,
-      aspectRatio: 'aspect-[5/6]' // Taller for better template visibility
+      aspectRatio: 'aspect-[4/5]' // Perfect for larger previews
     },
-    large: {
-      scale: 0.75,
-      containerWidth: 650,
-      containerHeight: 850,
-      aspectRatio: 'aspect-[5/6]' // Taller for better template visibility
+    dashboard: {
+      scale: 0.58,
+      containerWidth: 550,
+      containerHeight: 720,
+      aspectRatio: 'aspect-[4/5]' // Optimal for dashboard - covers area properly while fitting perfectly
     }
   }
   
   const config = sizeConfigs[size]
   
   return (
-    <div className={`w-full h-full relative overflow-hidden bg-white rounded-lg shadow-sm ${config.aspectRatio} ${className}`}>
+    <div 
+      key={`template-preview-${templateId}-${size}`} 
+      className={`w-full h-full relative overflow-hidden bg-white rounded-lg shadow-sm ${config.aspectRatio} ${className}`}
+    >
       {/* Perfect Center-Aligned Template Preview Container */}
       <div 
         className="absolute inset-0 flex items-center justify-center bg-white"
         style={{ 
-          padding: '8px' // Small padding for better visual appearance
+          padding: '8px' // Reduced padding for larger preview area
         }}
       >
         <div 
-          className="bg-white shadow-lg border border-gray-100 rounded-md overflow-hidden"
+          className="bg-white shadow-sm border border-gray-200/30 rounded-lg overflow-hidden"
           style={{
             width: `${config.containerWidth * config.scale}px`,
             height: `${config.containerHeight * config.scale}px`,
-            maxWidth: '100%',
-            maxHeight: '100%'
+            maxWidth: 'calc(100% - 16px)', // Optimized for larger thumbnails
+            maxHeight: 'calc(100% - 16px)' // Optimized for larger thumbnails
           }}
         >
           {/* Scaled template container - perfectly centered */}
@@ -167,5 +185,9 @@ export function MediumTemplatePreview({ templateId, className }: { templateId: s
 }
 
 export function LargeTemplatePreview({ templateId, className }: { templateId: string, className?: string }) {
-  return <OptimizedTemplatePreview templateId={templateId} size="large" className={className} />
+  return <OptimizedTemplatePreview templateId={templateId} size="dashboard" className={className} />
+}
+
+export function DashboardTemplatePreview({ templateId, className }: { templateId: string, className?: string }) {
+  return <OptimizedTemplatePreview templateId={templateId} size="dashboard" className={className} />
 }
