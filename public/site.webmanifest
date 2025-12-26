@@ -1,0 +1,50 @@
+{
+  "name": "BillCraft - Professional Invoice Generator",
+  "short_name": "BillCraft",
+  "description": "Create professional invoices instantly with our modern, easy-to-use invoice generator",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F172A",
+  "theme_color": "#FF6600",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["business", "finance", "productivity"],
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Create Invoice",
+      "short_name": "New Invoice",
+      "description": "Quickly create a new professional invoice",
+      "url": "/dashboard/invoices/create",
+      "icons": [
+        {
+          "src": "favicon.svg",
+          "sizes": "any"
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "View your invoicing dashboard",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "favicon.svg",
+          "sizes": "any"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+} 

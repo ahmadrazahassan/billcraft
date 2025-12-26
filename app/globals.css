@@ -1,0 +1,293 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Lenis Smooth Scrolling Styles */
+html {
+  scroll-behavior: auto !important;
+}
+
+html.lenis {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+@layer base {
+  :root {
+    /* Professional Color Palette - Orange + Black + Blue */
+    --background: 0 0% 100%; /* Pure white */
+    --foreground: 0 0% 10%; /* Deep black #1a1a1a */
+    --card: 0 0% 98%; /* Soft white for cards */
+    --card-foreground: 0 0% 10%; /* Deep black */
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 10%;
+    
+    /* Primary: Vibrant Orange */
+    --primary: 21 100% 50%; /* Orange #FF6600 */
+    --primary-foreground: 0 0% 100%; /* White text for contrast */
+    
+    /* Secondary: Professional Black */
+    --secondary: 0 0% 10%; /* Deep Black #1a1a1a */
+    --secondary-foreground: 0 0% 100%; /* White */
+    
+    /* Tertiary: Modern Blue Accent */
+    --accent: 217 91% 60%; /* Vibrant Blue #3B82F6 */
+    --accent-foreground: 0 0% 100%; /* White */
+    
+    /* Neutral grays */
+    --muted: 0 0% 96%; /* Very light gray */
+    --muted-foreground: 0 0% 45%; /* Medium gray */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 90%; /* Subtle border */
+    --input: 0 0% 95%; /* Input background */
+    --ring: 21 100% 50%; /* Orange focus ring */
+    --radius: 2rem; /* Ultra rounded border radius */
+    
+    /* Chart colors */
+    --chart-1: 21 100% 50%; /* Orange */
+    --chart-2: 0 0% 10%; /* Black */
+    --chart-3: 217 91% 60%; /* Blue */
+    --chart-4: 0 0% 60%; /* Gray */
+    --chart-5: 21 90% 45%; /* Darker Orange */
+    
+    /* Glass morphism variables */
+    --glass: rgba(255, 255, 255, 0.8);
+    --glass-nav: rgba(255, 255, 255, 0.95);
+    --glass-card: rgba(255, 255, 255, 0.6);
+  }
+  
+  .dark {
+    --background: 0 0% 8%; /* Deep dark */
+    --foreground: 0 0% 98%; /* Light text */
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 8%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 21 100% 50%; /* Orange */
+    --primary-foreground: 0 0% 100%; /* White text */
+    --secondary: 0 0% 98%; /* Light for dark mode */
+    --secondary-foreground: 0 0% 10%;
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 65%;
+    --accent: 217 91% 60%; /* Blue */
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 20%;
+    --input: 0 0% 15%;
+    --ring: 21 100% 50%;
+    
+    /* Glass morphism for dark mode */
+    --glass: rgba(0, 0, 0, 0.4);
+    --glass-nav: rgba(0, 0, 0, 0.8);
+    --glass-card: rgba(0, 0, 0, 0.3);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    @apply bg-background font-sans antialiased;
+    color: hsl(var(--foreground));
+    font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+    letter-spacing: -0.01em;
+  }
+  
+  /* Typography */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-weight: 500;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+    color: hsl(var(--foreground));
+  }
+  
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 600;
+  }
+  
+  h2 {
+    font-size: 2rem;
+    font-weight: 500;
+  }
+  
+  h3 {
+    font-size: 1.5rem;
+    font-weight: 500;
+  }
+  
+  .font-display {
+    font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+  
+  .font-body {
+    font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+    letter-spacing: -0.01em;
+  }
+}
+
+@layer components {
+  /* Glass morphism components */
+  .glass-card {
+    background: var(--glass-card);
+    @apply border border-border backdrop-blur-sm rounded-2xl shadow-sm;
+  }
+  
+  .glass-nav {
+    background: var(--glass-nav);
+    @apply border-b border-border backdrop-blur-md;
+  }
+  
+  .glass-button {
+    background: var(--glass);
+    @apply border border-border backdrop-blur-sm rounded-2xl transition-all duration-200 hover:bg-accent;
+  }
+  
+  /* Modern buttons - NO GRADIENTS */
+  .btn-primary {
+    @apply bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:shadow-md transition-all duration-200 rounded-2xl font-medium;
+  }
+  
+  .btn-secondary {
+    @apply bg-secondary hover:bg-secondary/90 text-secondary-foreground shadow-sm hover:shadow-md transition-all duration-200 rounded-2xl font-medium;
+  }
+  
+  /* Layout utilities */
+  .section-padding {
+    @apply py-12 md:py-16 lg:py-20;
+  }
+  
+  .container-padding {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+  
+  /* Professional cards */
+  .professional-card {
+    @apply bg-card border border-border rounded-2xl shadow-sm hover:shadow-md transition-all duration-200;
+  }
+  
+  /* Rounded elements */
+  .rounded-modern {
+    border-radius: 1.5rem;
+  }
+  
+  .rounded-extra {
+    border-radius: 2rem;
+  }
+}
+
+/* Modern Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Thin scrollbar utility classes */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.4);
+}
+
+.scrollbar-thumb-slate-300::-webkit-scrollbar-thumb {
+  background: rgb(203 213 225);
+}
+
+.scrollbar-track-transparent::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Simple animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.5s ease-out;
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* Professional selection */
+::selection {
+  background: hsl(var(--primary) / 0.2);
+  color: hsl(var(--foreground));
+}
+
+/* 3D Transform utilities */
+.transform-3d {
+  transform-style: preserve-3d;
+}
+
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.perspective-2000 {
+  perspective: 2000px;
+} 

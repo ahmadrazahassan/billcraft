@@ -1,0 +1,151 @@
+@startuml BillCraft_ER_Diagram
+
+' ER DIAGRAM ENTITIES (RECTANGLES)
+entity "USERS" as USERS {
+    *id* (PK)
+    firebase_uid (UNIQUE)
+    email
+    full_name
+    company_name
+    company_email
+    company_phone
+    company_address
+    plan
+    currency
+    invoice_prefix
+    next_invoice_number
+    default_payment_terms
+    default_tax_rate
+    created_at
+    updated_at
+}
+
+entity "CLIENTS" as CLIENTS {
+    *id* (PK)
+    user_id (FK)
+    name
+    email
+    phone
+    address_line_1
+    address_line_2
+    city
+    state
+    country
+    company_name
+    is_active
+    created_at
+    updated_at
+}
+
+entity "INVOICES" as INVOICES {
+    *id* (PK)
+    user_id (FK)
+    client_id (FK)
+    parent_invoice_id (FK)
+    invoice_number (UNIQUE)
+    status
+    template_name
+    issue_date
+    due_date
+    company_name
+    client_name
+    subtotal
+    tax_rate
+    tax_amount
+    discount_amount
+    total_amount
+    currency
+    payment_terms
+    notes
+    sent_at
+    paid_at
+    created_at
+    updated_at
+}
+
+entity "INVOICE_ITEMS" as INVOICE_ITEMS <<Weak Entity>> {
+    *id* (PK)
+    invoice_id (FK)
+    description
+    quantity
+    unit_price
+    line_total
+    tax_rate
+    sort_order
+    created_at
+}
+
+entity "USER_TRIALS" as USER_TRIALS {
+    *id* (PK)
+    user_id (FK, UNIQUE)
+    plan_type
+    status
+    trial_start
+    trial_end
+    trial_days
+    invoices_created
+    clients_created
+    usage_stats
+    created_at
+    updated_at
+}
+
+entity "USER_SUBSCRIPTIONS" as USER_SUBSCRIPTIONS {
+    *id* (PK)
+    user_id (FK)
+    plan_type
+    status
+    billing_interval
+    stripe_subscription_id (UNIQUE)
+    stripe_customer_id
+    current_period_start
+    current_period_end
+    amount
+    currency
+    created_at
+    updated_at
+}
+
+entity "PAYMENTS" as PAYMENTS {
+    *id* (PK)
+    user_id (FK)
+    invoice_id (FK)
+    amount
+    currency
+    payment_method
+    payment_status
+    transaction_id
+    payment_date
+    notes
+    created_at
+    updated_at
+}
+
+' RELATIONSHIPS (DIAMONDS) WITH CARDINALITIES
+USERS }o--|| CLIENTS : manages
+USERS }o--|| INVOICES : creates
+CLIENTS }o--|| INVOICES : receives
+INVOICES }o--|| INVOICE_ITEMS : contains
+USERS ||--|| USER_TRIALS : has_trial
+USERS }o--|| USER_SUBSCRIPTIONS : subscribes
+USERS }o--|| PAYMENTS : receives
+INVOICES }o--|| PAYMENTS : has
+
+' SELF-REFERENCING RELATIONSHIP
+INVOICES }o--|| INVOICES : recurs_from
+
+' LEGEND
+legend right
+    |= ER Diagram Notation |
+    | **RECTANGLE** | Entity (with attributes listed inside) |
+    | **DIAMOND** | Relationship |
+    | ***underlined*** | Primary Key |
+    | **(FK)** | Foreign Key |
+    | **(UNIQUE)** | Unique Constraint |
+    | **||--||** | One to One (1:1) |
+    | **}o--||** | One to Many (1:N) |
+    | **<<Weak Entity>>** | Weak Entity |
+    | **Bold Labels** | Relationship Names |
+endlegend
+
+@enduml

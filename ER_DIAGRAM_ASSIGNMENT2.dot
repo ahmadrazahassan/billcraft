@@ -1,0 +1,53 @@
+// BillCraft ER Diagram - Complete 7-Table Model
+digraph BillCraft_ER {
+    graph [rankdir=TB];
+    node [shape=box];
+
+    // ENTITIES
+    USERS [label="USERS"];
+    CLIENTS [label="CLIENTS"];
+    INVOICES [label="INVOICES"];
+    INVOICE_ITEMS [label="INVOICE_ITEMS"];
+    USER_TRIALS [label="USER_TRIALS"];
+    USER_SUBSCRIPTIONS [label="USER_SUBSCRIPTIONS"];
+    PAYMENTS [label="PAYMENTS"];
+
+    // RELATIONSHIPS
+    MANAGES [shape=diamond, label="MANAGES"];
+    CREATES [shape=diamond, label="CREATES"];
+    RECEIVES [shape=diamond, label="RECEIVES"];
+    CONTAINS [shape=diamond, label="CONTAINS"];
+    HAS_TRIAL [shape=diamond, label="HAS_TRIAL"];
+    SUBSCRIBES [shape=diamond, label="SUBSCRIBES"];
+    RECEIVES_PAYMENT [shape=diamond, label="RECEIVES"];
+    HAS_PAYMENT [shape=diamond, label="HAS"];
+    RECURS_FROM [shape=diamond, label="RECURS_FROM"];
+
+    // RELATIONSHIP CONNECTIONS
+    USERS -- MANAGES [label="1", arrowhead=none];
+    MANAGES -- CLIENTS [label="N"];
+
+    USERS -- CREATES [label="1", arrowhead=none];
+    CREATES -- INVOICES [label="N"];
+
+    CLIENTS -- RECEIVES [label="1", arrowhead=none];
+    RECEIVES -- INVOICES [label="N"];
+
+    INVOICES -- CONTAINS [label="1", arrowhead=none];
+    CONTAINS -- INVOICE_ITEMS [label="N"];
+
+    USERS -- HAS_TRIAL [label="1", arrowhead=none];
+    HAS_TRIAL -- USER_TRIALS [label="1"];
+
+    USERS -- SUBSCRIBES [label="1", arrowhead=none];
+    SUBSCRIBES -- USER_SUBSCRIPTIONS [label="N"];
+
+    USERS -- RECEIVES_PAYMENT [label="1", arrowhead=none];
+    RECEIVES_PAYMENT -- PAYMENTS [label="N"];
+
+    INVOICES -- HAS_PAYMENT [label="1", arrowhead=none];
+    HAS_PAYMENT -- PAYMENTS [label="N"];
+
+    INVOICES -- RECURS_FROM [label="1", arrowhead=none, constraint=false];
+    RECURS_FROM -- INVOICES [label="N"];
+}

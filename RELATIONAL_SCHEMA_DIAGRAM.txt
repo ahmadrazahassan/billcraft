@@ -1,0 +1,276 @@
+=================================================================================
+BILLCRAFT - RELATIONAL SCHEMA DIAGRAM
+Complete Database Design with 7 Relations
+=================================================================================
+
+INSTRUCTIONS FOR CREATING DIAGRAM:
+1. Visit https://dbdiagram.io/
+2. Copy the code below
+3. Paste into dbdiagram.io editor
+4. Export as PNG (high resolution - 300 DPI)
+5. Insert into your assignment document
+
+=================================================================================
+DBDIAGRAM.IO CODE:
+=================================================================================
+
+Table users {
+  id uuid [pk, not null]
+  firebase_uid text [unique, not null]
+  email text [not null]
+  full_name text
+  company_name text
+  company_email text
+  company_phone text
+  company_address text
+  company_city text
+  company_state text
+  company_zip text
+  company_country text [default: 'US']
+  company_website text
+  company_logo_url text
+  tax_id text
+  plan text [default: 'trial', note: 'trial, professional, enterprise']
+  trial_ends_at timestamptz
+  stripe_customer_id text
+  currency text [default: 'USD']
+  date_format text [default: 'MM/DD/YYYY']
+  timezone text [default: 'UTC']
+  language text [default: 'en']
+  invoice_prefix text [default: 'INV']
+  next_invoice_number integer [default: 1]
+  default_payment_terms integer [default: 30]
+  default_tax_rate decimal(5,2) [default: 0.00]
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  Note: 'User accounts with business information and preferences'
+}
+
+Table clients {
+  id uuid [pk, not null]
+  user_id uuid [ref: > users.id, not null]
+  name text [not null]
+  email text
+  phone text
+  website text
+  address_line_1 text
+  address_line_2 text
+  city text
+  state text
+  zip_code text
+  country text [default: 'US']
+  company_name text
+  tax_id text
+  notes text
+  tags text[]
+  is_active boolean [default: true]
+  search_vector tsvector
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  Indexes {
+    user_id
+    (user_id, created_at) [name: 'idx_clients_user_created']
+    (user_id, is_active) [name: 'idx_clients_user_active']
+  }
+  
+  Note: 'Customer/client database with contact management'
+}
+
+Table invoices {
+  id uuid [pk, not null]
+  user_id uuid [ref: > users.id, not null]
+  client_id uuid [ref: > clients.id]
+  invoice_number text [not null]
+  status text [default: 'draft', note: 'draft, sent, viewed, paid, overdue, cancelled, refunded']
+  template_name text [default: 'modern-blue']
+  logo_url text
+  issue_date date [not null, default: `CURRENT_DATE`]
+  due_date date [not null]
+  sent_at timestamptz
+  viewed_at timestamptz
+  paid_at timestamptz
+  company_name text
+  company_email text
+  company_phone text
+  company_address text
+  company_city text
+  company_state text
+  company_zip text
+  company_country text
+  company_website text
+  client_name text
+  client_email text
+  client_company text
+  client_address text
+  client_city text
+  client_state text
+  client_zip text
+  client_country text
+  subtotal decimal(12,2) [default: 0.00]
+  tax_rate decimal(5,2) [default: 0.00]
+  tax_amount decimal(12,2) [default: 0.00]
+  discount_type text [default: 'fixed', note: 'fixed, percentage']
+  discount_value decimal(12,2) [default: 0.00]
+  discount_amount decimal(12,2) [default: 0.00]
+  shipping_amount decimal(12,2) [default: 0.00]
+  total_amount decimal(12,2) [default: 0.00]
+  amount_paid decimal(12,2) [default: 0.00]
+  amount_due decimal(12,2) [default: 0.00]
+  currency text [default: 'USD']
+  exchange_rate decimal(10,4) [default: 1.0000]
+  payment_terms text
+  notes text
+  internal_notes text
+  terms_and_conditions text
+  payment_method text
+  payment_reference text
+  late_fee_amount decimal(12,2) [default: 0.00]
+  is_recurring boolean [default: false]
+  recurring_frequency text [note: 'weekly, monthly, quarterly, yearly']
+  recurring_interval integer [default: 1]
+  recurring_end_date date
+  next_recurring_date date
+  recurring_count integer [default: 0]
+  max_recurring integer
+  parent_invoice_id uuid [ref: > invoices.id]
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  Indexes {
+    user_id
+    client_id
+    status
+    (created_at) [name: 'idx_invoices_created_at']
+    (user_id, invoice_number) [unique, name: 'idx_invoices_user_number']
+  }
+  
+  Note: 'Invoice documents with financial data and status tracking'
+}
+
+Table invoice_items {
+  id uuid [pk, not null]
+  invoice_id uuid [ref: > invoices.id, not null]
+  description text [not null]
+  quantity decimal(10,3) [default: 1.000]
+  unit_price decimal(12,2) [default: 0.00]
+  line_total decimal(12,2) [default: 0.00]
+  tax_rate decimal(5,2)
+  tax_amount decimal(12,2) [default: 0.00]
+  sort_order integer [default: 0]
+  item_type text [default: 'service', note: 'product, service, expense, discount']
+  sku text
+  unit_of_measure text [default: 'each']
+  created_at timestamptz [default: `now()`]
+  
+  Indexes {
+    invoice_id
+  }
+  
+  Note: 'WEAK ENTITY: Line items within invoices (cannot exist without invoice)'
+}
+
+Table user_trials {
+  id uuid [pk, not null]
+  user_id uuid [ref: - users.id, unique, not null]
+  plan_type text [not null, default: 'professional', note: 'professional, enterprise']
+  status text [not null, default: 'active', note: 'active, expired, cancelled, converted']
+  trial_start timestamptz [not null, default: `now()`]
+  trial_end timestamptz [not null]
+  trial_days integer [not null, default: 14]
+  original_end_date timestamptz
+  extension_days integer [default: 0]
+  extension_reason text
+  converted_to_plan text
+  converted_at timestamptz
+  stripe_subscription_id text
+  invoices_created integer [default: 0]
+  clients_created integer [default: 0]
+  features_used jsonb [default: '{}']
+  usage_stats jsonb [default: '{}']
+  last_activity_at timestamptz [default: `now()`]
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  Indexes {
+    user_id [unique]
+    status
+  }
+  
+  Note: 'Free trial management with 90-day tracking (1:1 with users)'
+}
+
+Table user_subscriptions {
+  id uuid [pk, not null]
+  user_id uuid [ref: > users.id, not null]
+  plan_type text [not null, note: 'professional, enterprise']
+  status text [not null, note: 'active, canceled, past_due, incomplete, trialing, paused']
+  billing_interval text [not null, note: 'monthly, yearly']
+  stripe_subscription_id text [unique, not null]
+  stripe_customer_id text [not null]
+  stripe_price_id text [not null]
+  stripe_product_id text
+  current_period_start timestamptz [not null]
+  current_period_end timestamptz [not null]
+  trial_start timestamptz
+  trial_end timestamptz
+  cancel_at_period_end boolean [not null, default: false]
+  canceled_at timestamptz
+  cancellation_reason text
+  amount integer [not null]
+  currency text [not null, default: 'USD']
+  tax_percent decimal(5,2) [default: 0.00]
+  features jsonb [default: '{}']
+  usage_limits jsonb [default: '{}']
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  Indexes {
+    user_id
+    stripe_subscription_id [unique]
+  }
+  
+  Note: 'Paid subscription management with Stripe integration'
+}
+
+Table payments {
+  id uuid [pk, not null]
+  user_id uuid [ref: > users.id, not null]
+  invoice_id uuid [ref: > invoices.id, not null]
+  amount decimal(12,2) [not null]
+  currency text [not null, default: 'USD']
+  payment_method text [not null]
+  payment_status text [default: 'completed', note: 'pending, completed, failed, refunded, cancelled']
+  transaction_id text
+  reference_number text
+  processor text
+  processor_fee decimal(12,2) [default: 0.00]
+  net_amount decimal(12,2)
+  payment_date date [not null, default: `CURRENT_DATE`]
+  processed_at timestamptz [default: `now()`]
+  notes text
+  internal_notes text
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+  
+  Indexes {
+    user_id
+    invoice_id
+  }
+  
+  Note: 'Payment records tracking all payments received'
+}
+
+=================================================================================
+END OF DBDIAGRAM.IO CODE
+=================================================================================
+
+ALTERNATIVE: Draw.io Instructions
+1. Open https://app.diagrams.net/
+2. Create new diagram
+3. Use "Entity Relation" shapes
+4. Follow the schema structure above
+5. Export as PNG (300 DPI)
+
+=================================================================================
